@@ -34,6 +34,7 @@ mutable struct NamedTrajectory
     bounds::NamedTuple{bnames, <:Tuple{Vararg{AbstractVector{Float64}}}} where bnames
     initial::NamedTuple{inames, <:Tuple{Vararg{AbstractVector{Float64}}}} where inames
     final::NamedTuple{fnames, <:Tuple{Vararg{AbstractVector{Float64}}}} where fnames
+    goal::NamedTuple{gnames, <:Tuple{Vararg{AbstractVector{Float64}}}} where gnames
     components::NamedTuple{cnames, <:Tuple{Vararg{AbstractVector{Int}}}} where cnames
     names::Tuple{Vararg{Symbol}}
     controls_names::Tuple{Vararg{Symbol}}
@@ -42,13 +43,14 @@ end
 
 function NamedTrajectory(
     comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
-        {names, vals <: AbstractVecOrMat{Float64}};
+        {names, vals <: AbstractVecOrMat};
     dt::Union{Nothing, Float64}=nothing,
     dynamical_dts=false,
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     bounds=(;),
     initial=(;),
-    final=(;)
+    final=(;),
+    goal=(;),
 )
     controls = (controls isa Symbol) ? (controls,) : controls
 
@@ -58,6 +60,7 @@ function NamedTrajectory(
     @assert all([k ∈ keys(comp_data) for k ∈ controls])
     @assert all([k ∈ keys(comp_data) for k ∈ keys(initial)])
     @assert all([k ∈ keys(comp_data) for k ∈ keys(final)])
+    @assert all([k ∈ keys(comp_data) for k ∈ keys(goal)])
 
     @assert all([k ∈ keys(comp_data) for k ∈ keys(bounds)])
     @assert all([(bound isa AbstractVector{Float64}) for bound ∈ bounds])
@@ -91,6 +94,7 @@ function NamedTrajectory(
     @assert all([length(bounds[k]) == dims_tuple[k] for k ∈ keys(bounds)])
     @assert all([length(initial[k]) == dims_tuple[k] for k ∈ keys(initial)])
     @assert all([length(final[k]) == dims_tuple[k] for k ∈ keys(final)])
+    @assert all([length(goal[k]) == dims_tuple[k] for k ∈ keys(goal)])
 
     comp_pairs::Vector{Pair{Symbol, AbstractVector{Int}}} =
         [(dims_pairs[1][1] => 1:dims_pairs[1][2])]
@@ -134,6 +138,7 @@ function NamedTrajectory(
         bounds,
         initial,
         final,
+        goal,
         comps,
         names,
         controls
@@ -153,7 +158,8 @@ function NamedTrajectory(
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     bounds=(;),
     initial=(;),
-    final=(;)
+    final=(;),
+    goal=(;),
 )
     controls = (controls isa Symbol) ? (controls,) : controls
 
@@ -163,6 +169,7 @@ function NamedTrajectory(
     @assert all([k ∈ keys(components) for k ∈ controls])
     @assert all([k ∈ keys(components) for k ∈ keys(initial)])
     @assert all([k ∈ keys(components) for k ∈ keys(final)])
+    @assert all([k ∈ keys(components) for k ∈ keys(goal)])
 
     @assert all([k ∈ keys(components) for k ∈ keys(bounds)])
     @assert all([
@@ -190,6 +197,7 @@ function NamedTrajectory(
     @assert all([length(bounds[k]) == dims[k] for k in keys(bounds)])
     @assert all([length(initial[k]) == dims[k] for k in keys(initial)])
     @assert all([length(final[k]) == dims[k] for k in keys(final)])
+    @assert all([length(goal[k]) == dims[k] for k in keys(goal)])
 
     names = Tuple(keys(components))
 
@@ -229,6 +237,7 @@ function NamedTrajectory(
         Z.bounds,
         Z.initial,
         Z.final,
+        Z.goal,
         Z.components,
         Z.names,
         Z.controls_names

@@ -1,6 +1,7 @@
 module Utils
 
-export save, load
+export save
+export load_traj
 
 using JLD2
 using ..Types
@@ -10,7 +11,7 @@ function JLD2.save(filename::String, traj::NamedTrajectory)
     save(filename, "traj", traj)
 end
 
-function JLD2.load(filename::String)
+function load_traj(filename::String)
     @assert split(filename, ".")[end] == "jld2"
     return load(filename, "traj")
 end
