@@ -44,9 +44,9 @@ end
 function NamedTrajectory(
     comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
         {names, vals <: AbstractVecOrMat};
+    controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     dt::Union{Nothing, Float64}=nothing,
     dynamical_dts=false,
-    controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     bounds=(;),
     initial=(;),
     final=(;),

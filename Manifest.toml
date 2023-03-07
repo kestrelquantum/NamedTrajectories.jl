@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.1"
+julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "b9b92b44c7c2ae82bdbd9ea0766b37347793674e"
+project_hash = "60e2b0528ab8928fd052c87fa17ab256401dad89"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -105,6 +105,12 @@ git-tree-sha1 = "844b061c104c408b24537482469400af6075aae4"
 uuid = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
 version = "0.1.5"
 
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "4f619d394ac521dc59cb80a2cd8f78578e483a9d"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.2.1"
+
 [[deps.ColorBrewer]]
 deps = ["Colors", "JSON", "Test"]
 git-tree-sha1 = "61c5334f33d91e570e1d0c3eb5465835242582c4"
@@ -144,7 +150,7 @@ version = "4.6.0"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "0.5.2+0"
+version = "1.0.1+0"
 
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
@@ -502,6 +508,12 @@ git-tree-sha1 = "b53380851c6e6664204efb2e62cd24fa5c47e4ba"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "2.1.2+0"
 
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "d9ae7a9081d9b1a3b2a5c1d3dac5e2fdaafbd538"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.22"
+
 [[deps.KernelDensity]]
 deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "StatsBase"]
 git-tree-sha1 = "9816b296736292a80b9a3200eb7fbb57aaa3917a"
@@ -610,6 +622,12 @@ version = "0.3.20"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "60168780555f3e663c536500aa790b6368adc02a"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "2.3.0"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg"]
@@ -908,6 +926,12 @@ git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
 
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "90cb983381a9dc7d3dff5fb2d1ee52cd59877412"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.5.1"
+
 [[deps.Rmath]]
 deps = ["Random", "Rmath_jll"]
 git-tree-sha1 = "f65dcb5fa46aee0cf9ed6274ccbd597adc49aa7b"
@@ -1079,7 +1103,7 @@ version = "1.10.0"
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.TensorCore]]
 deps = ["LinearAlgebra"]

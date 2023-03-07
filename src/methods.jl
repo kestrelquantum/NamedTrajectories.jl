@@ -8,37 +8,70 @@ using ..Types
 
 function add_component!(
     traj::NamedTrajectory,
-    symb::Symbol,
-    vals::AbstractVecOrMat{Float64};
+    name::Symbol,
+    data::AbstractVecOrMat{Float64};
     type=:state
 )
-    if vals isa AbstractVector
-        vals = reshape(vals, 1, traj.T)
+
+    # check if data is a vector and convert to matrix if so
+    if data isa AbstractVector
+        data = reshape(data, 1, traj.T)
     end
 
-    @assert size(vals, 2) == traj.T
-    @assert symb ∉ keys(traj.components)
+    # get the dimension of the new component
+    dim = size(data, 1)
+
+    # check data against existing data
+    @assert size(data, 2) == traj.T
+    @assert name ∉ keys(traj.components)
     @assert type ∈ (:state, :control)
 
-    dim = size(vals, 1)
 
-    traj.components = (;
-        traj.components...,
-        symb => (traj.dim + 1):(traj.dim + dim)
-    )
-    traj.data = vcat(traj.data, vals)
-    traj.datavec = vec(view(traj.data, :, :))
-    traj.dim += dim
-    dim_dict = Dict(pairs(dims))
-    dim_dict[symb] = dim
+    # update components
+
+    comp_dict = Dict(pairs(traj.components))
+
+    comp_dict[name] = (traj.dim + 1):(traj.dim + dim)
+
     if type == :state
-        push!(traj.states, symb)
-        dim_dict[:x] += dim
+        comp_dict[:states] = vcat(comp_dict[:states], comp_dict[name])
     else
-        push!(traj.controls, symb)
-        dim_dict[:u] += dim
+        comp_dict[:controls] = vcat(comp_dict[:controls], comp_dict[name])
     end
+
+    traj.components = NamedTuple(comp_dict)
+
+
+    # update dims
+
+    traj.dim += dim
+
+    dim_dict = Dict(pairs(traj.dims))
+
+    dim_dict[name] = dim
+
+    if type == :state
+        dim_dict[:states] += dim
+    else
+        traj.controls_names = (traj.controls_names..., name)
+        dim_dict[:controls] += dim
+    end
+
     traj.dims = NamedTuple(dim_dict)
+
+
+    # update names
+
+    traj.names = (traj.names..., name)
+
+
+    # update data
+
+    traj.data = vcat(traj.data, data)
+
+    traj.datavec = vec(view(traj.data, :, :))
+
+    return nothing
 end
 
 function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float64})
@@ -71,8 +104,13 @@ end
 
 Base.getindex(traj::NamedTrajectory, symb::Symbol) = getproperty(traj, symb)
 
-Base.setproperty!(traj::NamedTrajectory, symb::Symbol, val::AbstractMatrix{Float64}) =
-    update!(traj, symb, val)
+function Base.setproperty!(traj::NamedTrajectory, symb::Symbol, val::AbstractMatrix)
+    if symb ∈ fieldnames(NamedTrajectory)
+        setfield!(traj, symb, val)
+    else
+        update!(traj, symb, val)
+    end
+end
 
 function Base.getproperty(traj::NamedTrajectory, symb::Symbol)
     if symb ∈ fieldnames(NamedTrajectory)
