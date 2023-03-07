@@ -21,7 +21,7 @@ test: methods.jl
     type = :state
 
     add_component!(traj, name, data; type=type)
-    @test traj.z \approx data
+    @test traj.z ≈ data
     @test name ∈ traj.names
 
     # testing adding state vector component
