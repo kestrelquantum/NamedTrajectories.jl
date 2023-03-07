@@ -96,7 +96,7 @@ Base.size(traj::NamedTrajectory) = (dim = traj.dim, T = traj.T)
 Base.getindex(traj::NamedTrajectory, t::Int)::TimeSlice =
     TimeSlice(t, view(traj.data, :, t), traj.components, traj.names, traj.controls_names)
 
-Base.lastindex(traj::NamedTrajectory) = traj.T
+Base.lastindex(traj::NamedTrajectory)::TimeSlice = traj[traj.T]
 
 function Base.getindex(traj::NamedTrajectory, ts::AbstractVector{Int})::Vector{TimeSlice}
     return [traj[t] for t ∈ ts]
