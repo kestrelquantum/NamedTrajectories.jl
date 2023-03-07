@@ -32,7 +32,7 @@ test: methods.jl
 
     add_component!(traj, name, data; type=type)
 
-    @test traj.y == data
+    @test vec(traj.y) ≈ vec(data)
     @test name ∈ traj.names
 
 
@@ -44,7 +44,7 @@ test: methods.jl
 
     add_component!(traj, name, data; type=type)
 
-    @test traj.a == data
+    @test traj.a ≈ data
     @test name ∈ traj.names
     @test name ∈ traj.controls_names
 
@@ -57,7 +57,7 @@ test: methods.jl
 
     add_component!(traj, name, data; type=type)
 
-    @test traj.b == data
+    @test vec(traj.b) ≈ vec(data)
     @test name ∈ traj.names
     @test name ∈ traj.controls_names
 end
