@@ -268,4 +268,13 @@ struct TimeSlice
     controls_names::Tuple{Vararg{Symbol}}
 end
 
+function TimeSlice(
+    Z::NamedTrajectory,
+    t::Int
+)
+    @assert 1 ≤ t ≤ Z.T
+    data = view(Z.data, :, t)
+    return TimeSlice(t, data, Z.components, Z.names, Z.controls_names)
+end
+
 end

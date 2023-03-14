@@ -93,10 +93,9 @@ end
 """
 Base.size(traj::NamedTrajectory) = (dim = traj.dim, T = traj.T)
 
-Base.getindex(traj::NamedTrajectory, t::Int)::TimeSlice =
-    TimeSlice(t, view(traj.data, :, t), traj.components, traj.names, traj.controls_names)
+Base.getindex(traj::NamedTrajectory, t::Int) = TimeSlice(traj, t)
 
-Base.lastindex(traj::NamedTrajectory)::TimeSlice = traj[traj.T]
+Base.lastindex(traj::NamedTrajectory) = traj.T
 
 function Base.getindex(traj::NamedTrajectory, ts::AbstractVector{Int})::Vector{TimeSlice}
     return [traj[t] for t ∈ ts]
@@ -122,6 +121,15 @@ function Base.getproperty(traj::NamedTrajectory, symb::Symbol)
 end
 
 function Base.getproperty(slice::TimeSlice, symb::Symbol)
+    if symb in fieldnames(TimeSlice)
+        return getfield(slice, symb)
+    else
+        indices = slice.components[symb]
+        return slice.data[indices]
+    end
+end
+
+function Base.getindex(slice::TimeSlice, symb::Symbol)
     if symb in fieldnames(TimeSlice)
         return getfield(slice, symb)
     else
