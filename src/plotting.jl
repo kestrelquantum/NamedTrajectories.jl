@@ -125,7 +125,7 @@ function plot(
         if key ∈ ignored_labels
             labels = nothing
         else
-            labels = [latexstring(key, "_{$i}") for i = 1:size(data, 2)]
+            labels = [latexstring(key, "_{$i}") for i = 1:size(data, 1)]
         end
 
         # plot data
@@ -152,6 +152,9 @@ function plot(
 end
 
 function plot(path::String, traj::NamedTrajectory, args...; kwargs...)
+    if !isdir(dirname(path))
+        mkdir(dirname(path))
+    end
     save(path, plot(traj, args...; kwargs...))
 end
 
