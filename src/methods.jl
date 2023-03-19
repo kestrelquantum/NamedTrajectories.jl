@@ -83,8 +83,13 @@ function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float
     traj.datavec = vec(view(traj.data, :, :))
 end
 
-function times(traj::NamedTrajectory)
-    return [0:traj.T-1...] .* traj.dt
+function times(traj::NamedTrajectory, dt_name::Union{Symbol, Nothing}=nothing)
+    if traj.dynamical_dts
+        @assert !isnothing(dt_name)
+        return cumsum(vec(traj[dt_name]))
+    else
+        return [0:traj.T-1...] .* traj.dt
+    end
 end
 
 

@@ -21,7 +21,8 @@ function plot(
     titlesize::Int=25,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
     ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}} =
-        Symbol[]
+        Symbol[],
+    dt_name::Union{Symbol,Nothing}=nothing
 )
     # convert single symbol to vector: comps
     if comps isa Symbol
@@ -35,6 +36,8 @@ function plot(
 
     @assert all([key ∈ keys(traj.components) for key ∈ comps])
     @assert all([key ∈ keys(traj.components) for key ∈ keys(transformations)])
+
+    ts = times(traj, dt_name)
 
     # create figure
     fig = Figure(resolution=res)
@@ -64,7 +67,7 @@ function plot(
                 # plot transformed data
                 series!(
                     ax,
-                    times(traj),
+                    ts,
                     transformed_data;
                     color=series_color,
                     markersize=5,
@@ -96,7 +99,7 @@ function plot(
             # plot transformed data
             series!(
                 ax,
-                times(traj),
+                ts,
                 transformed_data;
                 color=series_color,
                 markersize=5
@@ -131,7 +134,7 @@ function plot(
         # plot data
         series!(
             ax,
-            times(traj),
+            ts,
             data;
             color=series_color,
             markersize=5,
