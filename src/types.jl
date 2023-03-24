@@ -73,7 +73,7 @@ function NamedTrajectory(
             for bound ∈ bounds
     ])
 
-    bounds_dict = Dict(pairs(bounds))
+    bounds_dict = Dict{Symbol,Any}(pairs(bounds))
     for (name, bound) ∈ bounds_dict
         if bound isa AbstractVector
             bounds_dict[name] = (-bound, bound)
