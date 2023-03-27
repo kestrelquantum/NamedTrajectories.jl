@@ -2,7 +2,7 @@
 CurrentModule = NamedTrajectories
 ```
 
-# NamedTrajectories
+# NamedTrajectories.jl
 
 Documentation for [NamedTrajectories](https://github.com/aarontrowbridge/NamedTrajectories.jl).
 
@@ -12,3 +12,4 @@ Documentation for [NamedTrajectories](https://github.com/aarontrowbridge/NamedTr
 ```@autodocs
 Modules = [NamedTrajectories]
 ```
+
