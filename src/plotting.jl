@@ -150,8 +150,7 @@ function plot(
         ax_count += 1
     end
 
-    # return figure
-    fig
+    return fig
 end
 
 function plot(path::String, traj::NamedTrajectory, args...; kwargs...)
