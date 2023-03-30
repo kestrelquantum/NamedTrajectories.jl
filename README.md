@@ -13,7 +13,7 @@ This package is under active development and issues may arise -- please be patie
 
 ## Installation
 
-NamedTrajectories.jl is now registered! Instal with
+NamedTrajectories.jl is now registered! Install with
 
 ```julia
 using Pkg
