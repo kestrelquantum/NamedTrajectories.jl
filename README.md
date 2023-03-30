@@ -13,11 +13,11 @@ This package is under active development and issues may arise -- please be patie
 
 ## Installation
 
-NamedTrajectories.jl is not yet registered, so you will need to install it manually:
+NamedTrajectories.jl is now registered! Instal with
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/aarontrowbridge/NamedTrajectories.jl", rev="main")
+Pkg.add(NamedTrajectories)
 ```
 
 
