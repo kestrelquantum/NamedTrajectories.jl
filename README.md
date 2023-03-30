@@ -52,4 +52,18 @@ z1.u # returns 2x1 matrix of u data
 
 traj.data # returns data as 5x10 matrix
 traj.names # returns names as tuple (:x, :u)
+
+# simple build in plotting
+plot(traj)
 ```
+
+This script generates the following plot as demonstrated in [demo.ipynb](examples/notebooks/demo.ipynb)
+![](examples/notebooks/demo.png)
+
+
+## Plotting
+
+See plotting function in [plotting.jl](src/plotting.jl) for more details.
+
+Documentation coming soon!
+
