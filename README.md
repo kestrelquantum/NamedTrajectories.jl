@@ -47,8 +47,8 @@ traj.u # returns 2x10 matrix of u data
 
 z1 = traj[1] # returns TimeSlice with x and u data
 
-z1.x # returns 3x1 matrix of x data
-z1.u # returns 2x1 matrix of u data
+z1.x # returns 3 element vector of x data at timestep 1
+z1.u # returns 2 element vector of u data at timestep 1
 
 traj.data # returns data as 5x10 matrix
 traj.names # returns names as tuple (:x, :u)
