@@ -1,28 +1,7 @@
-module Types
+module StructNamedTrajectory
 
 export NamedTrajectory
-export TimeSlice
 
-"""
-We define the following struct to store and organize the various components of a trajectory. (e.g. the state `x`, control `u`, and control derivative `du` and `ddu`)
-
-```julia
-mutable struct NamedTrajectory
-    data::AbstractMatrix{Float64}
-    datavec::AbstractVector{Float64}
-    T::Int
-    dt::Float64
-    dynamical_dts::Bool
-    dim::Int
-    dims::NamedTuple{dnames, <:Tuple{Vararg{Int}}} where dnames
-    bounds::NamedTuple{bnames, <:Tuple{Vararg{AbstractVector{Float64}}}} where bnames
-    initial::NamedTuple{inames, <:Tuple{Vararg{AbstractVector{Float64}}}} where inames
-    final::NamedTuple{fnames, <:Tuple{Vararg{AbstractVector{Float64}}}} where fnames
-    components::NamedTuple{names, <:Tuple{Vararg{AbstractVector{Int}}}} where names
-    controls_names::Tuple{Vararg{Symbol}}
-end
-```
-"""
 
 const BoundType = Tuple{AbstractVector{<:Real}, AbstractVector{<:Real}}
 
@@ -30,8 +9,8 @@ mutable struct NamedTrajectory
     data::AbstractMatrix{Float64}
     datavec::AbstractVector{Float64}
     T::Int
-    dt::Float64
-    dynamical_dts::Bool
+    timestep::Float64
+    dynamical_timesteps::Bool
     dim::Int
     dims::NamedTuple{dnames, <:Tuple{Vararg{Int}}} where dnames
     bounds::NamedTuple{bnames, <:Tuple{Vararg{BoundType}}} where bnames
@@ -48,8 +27,8 @@ function NamedTrajectory(
     comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
         {names, vals <: AbstractVecOrMat};
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
-    dt::Union{Nothing, Float64}=nothing,
-    dynamical_dts::Bool=false,
+    timestep::Union{Nothing, Float64}=nothing,
+    dynamical_timesteps::Bool=false,
     bounds=(;),
     initial=(;),
     final=(;),
@@ -58,7 +37,7 @@ function NamedTrajectory(
     controls = (controls isa Symbol) ? (controls,) : controls
 
     @assert !isempty(controls)
-    @assert !isnothing(dt)
+    @assert !isnothing(timestep)
 
     @assert all([k ∈ keys(comp_data) for k ∈ controls])
     @assert all([k ∈ keys(comp_data) for k ∈ keys(initial)])
@@ -148,8 +127,8 @@ function NamedTrajectory(
         data,
         datavec,
         T,
-        dt,
-        dynamical_dts,
+        timestep,
+        dynamical_timesteps,
         dim,
         dims,
         bounds,
@@ -170,8 +149,8 @@ function NamedTrajectory(
         names,
         <:Tuple{Vararg{AbstractVector{Int}}}
     } where names;
-    dt::Union{Nothing, Float64}=nothing,
-    dynamical_dts::Bool=false,
+    timestep::Union{Nothing, Float64}=nothing,
+    dynamical_timesteps::Bool=false,
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     bounds=(;),
     initial=(;),
@@ -181,7 +160,7 @@ function NamedTrajectory(
     controls = (controls isa Symbol) ? (controls,) : controls
 
     @assert !isempty(controls) "must specify at least one control"
-    @assert !isnothing(dt) "must specify a time step size"
+    @assert !isnothing(timestep) "must specify a time step size"
 
     @assert all([k ∈ keys(components) for k ∈ controls])
     @assert all([k ∈ keys(components) for k ∈ keys(initial)])
@@ -230,8 +209,8 @@ function NamedTrajectory(
         data,
         datavec,
         T,
-        dt,
-        dynamical_dts,
+        timestep,
+        dynamical_timesteps,
         dim,
         dims,
         bounds,
@@ -256,8 +235,8 @@ function NamedTrajectory(
         data,
         datavec,
         Z.T,
-        Z.dt,
-        Z.dynamical_dts,
+        Z.timestep,
+        Z.dynamical_timesteps,
         Z.dim,
         Z.dims,
         Z.bounds,
@@ -281,26 +260,6 @@ function NamedTrajectory(
     T = size(data, 2)
     datavec = vec(data)
     return NamedTrajectory(datavec, T, components; kwargs...)
-end
-
-
-struct TimeSlice
-    t::Int
-    data::AbstractVector{Float64}
-    components::NamedTuple{
-        cnames, <:Tuple{Vararg{AbstractVector{Int}}}
-    } where cnames
-    names::Tuple{Vararg{Symbol}}
-    controls_names::Tuple{Vararg{Symbol}}
-end
-
-function TimeSlice(
-    Z::NamedTrajectory,
-    t::Int
-)
-    @assert 1 ≤ t ≤ Z.T
-    data = view(Z.data, :, t)
-    return TimeSlice(t, data, Z.components, Z.names, Z.controls_names)
 end
 
 end

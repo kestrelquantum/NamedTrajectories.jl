@@ -6,7 +6,9 @@ export derivative
 export integral
 
 using JLD2
-using ..Types
+
+using ..StructNamedTrajectory
+using ..StructTimeSlice
 
 function JLD2.save(filename::String, traj::NamedTrajectory)
     @assert split(filename, ".")[end] == "jld2"

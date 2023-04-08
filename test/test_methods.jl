@@ -12,7 +12,7 @@ test: methods.jl
         u = rand(2, T)
     )
 
-    traj = NamedTrajectory(data; dt=0.1, controls=:u)
+    traj = NamedTrajectory(data; timestep=0.1, controls=:u)
 
     # testing adding state matrix component
 

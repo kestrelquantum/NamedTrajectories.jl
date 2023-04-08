@@ -1,10 +1,11 @@
-module Methods
+module MethodsNamedTrajectory
 
 export add_component!
 export update!
 export times
 
-using ..Types
+using ..StructNamedTrajectory
+using ..StructTimeSlice
 
 function add_component!(
     traj::NamedTrajectory,
@@ -84,11 +85,11 @@ function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float
 end
 
 function times(traj::NamedTrajectory, dt_name::Union{Symbol, Nothing}=nothing)
-    if traj.dynamical_dts
+    if traj.dynamical_timesteps
         @assert !isnothing(dt_name)
         return cumsum(vec(traj[dt_name]))
     else
-        return [0:traj.T-1...] .* traj.dt
+        return [0:traj.T-1...] .* traj.timestep
     end
 end
 
@@ -125,24 +126,6 @@ function Base.getproperty(traj::NamedTrajectory, symb::Symbol)
     end
 end
 
-function Base.getproperty(slice::TimeSlice, symb::Symbol)
-    if symb in fieldnames(TimeSlice)
-        return getfield(slice, symb)
-    else
-        indices = slice.components[symb]
-        return slice.data[indices]
-    end
-end
-
-function Base.getindex(slice::TimeSlice, symb::Symbol)
-    if symb in fieldnames(TimeSlice)
-        return getfield(slice, symb)
-    else
-        indices = slice.components[symb]
-        return slice.data[indices]
-    end
-end
-
 function Base.:*(α::Float64, traj::NamedTrajectory)
     return NamedTrajectory(α * traj.datavec, traj)
 end
@@ -162,5 +145,6 @@ function Base.:-(traj1::NamedTrajectory, traj2::NamedTrajectory)
     @assert traj1.T == traj2.T
     return NamedTrajectory(traj1.datavec - traj2.datavec, traj1)
 end
+
 
 end

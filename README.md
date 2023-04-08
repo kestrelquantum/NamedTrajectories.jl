@@ -39,7 +39,7 @@ components = (
 )
 
 # build trajectory
-traj = NamedTrajectory(components; dt=dt, controls=:u)
+traj = NamedTrajectory(components; timestep=dt, controls=:u)
 
 # access data by name
 traj.x # returns 3x10 matrix of x data
