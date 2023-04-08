@@ -11,8 +11,8 @@ mutable struct NamedTrajectory
     data::AbstractMatrix{Float64}
     datavec::AbstractVector{Float64}
     T::Int
-    dt::Float64
-    dynamical_dts::Bool
+    timestep::Float64
+    dynamical_timesteps::Bool
     dim::Int
     dims::NamedTuple{dnames, <:Tuple{Vararg{Int}}} where dnames
     bounds::NamedTuple{bnames, <:Tuple{Vararg{AbstractVector{Float64}}}} where bnames
@@ -30,8 +30,8 @@ mutable struct NamedTrajectory
     data::AbstractMatrix{Float64}
     datavec::AbstractVector{Float64}
     T::Int
-    dt::Float64
-    dynamical_dts::Bool
+    timestep::Float64
+    dynamical_timesteps::Bool
     dim::Int
     dims::NamedTuple{dnames, <:Tuple{Vararg{Int}}} where dnames
     bounds::NamedTuple{bnames, <:Tuple{Vararg{BoundType}}} where bnames
@@ -48,8 +48,8 @@ function NamedTrajectory(
     comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
         {names, vals <: AbstractVecOrMat};
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
-    dt::Union{Nothing, Float64}=nothing,
-    dynamical_dts::Bool=false,
+    timestep::Union{Nothing, Float64}=nothing,
+    dynamical_timesteps::Bool=false,
     bounds=(;),
     initial=(;),
     final=(;),
@@ -58,7 +58,7 @@ function NamedTrajectory(
     controls = (controls isa Symbol) ? (controls,) : controls
 
     @assert !isempty(controls)
-    @assert !isnothing(dt)
+    @assert !isnothing(timestep)
 
     @assert all([k ∈ keys(comp_data) for k ∈ controls])
     @assert all([k ∈ keys(comp_data) for k ∈ keys(initial)])
@@ -148,8 +148,8 @@ function NamedTrajectory(
         data,
         datavec,
         T,
-        dt,
-        dynamical_dts,
+        timestep,
+        dynamical_timesteps,
         dim,
         dims,
         bounds,
@@ -170,8 +170,8 @@ function NamedTrajectory(
         names,
         <:Tuple{Vararg{AbstractVector{Int}}}
     } where names;
-    dt::Union{Nothing, Float64}=nothing,
-    dynamical_dts::Bool=false,
+    timestep::Union{Nothing, Float64}=nothing,
+    dynamical_timesteps::Bool=false,
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     bounds=(;),
     initial=(;),
@@ -181,7 +181,7 @@ function NamedTrajectory(
     controls = (controls isa Symbol) ? (controls,) : controls
 
     @assert !isempty(controls) "must specify at least one control"
-    @assert !isnothing(dt) "must specify a time step size"
+    @assert !isnothing(timestep) "must specify a time step size"
 
     @assert all([k ∈ keys(components) for k ∈ controls])
     @assert all([k ∈ keys(components) for k ∈ keys(initial)])
@@ -230,8 +230,8 @@ function NamedTrajectory(
         data,
         datavec,
         T,
-        dt,
-        dynamical_dts,
+        timestep,
+        dynamical_timesteps,
         dim,
         dims,
         bounds,
@@ -256,8 +256,8 @@ function NamedTrajectory(
         data,
         datavec,
         Z.T,
-        Z.dt,
-        Z.dynamical_dts,
+        Z.timestep,
+        Z.dynamical_timesteps,
         Z.dim,
         Z.dims,
         Z.bounds,

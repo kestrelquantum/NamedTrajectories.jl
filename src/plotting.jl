@@ -5,8 +5,10 @@ export plot
 using CairoMakie
 using LaTeXStrings
 
-using ..Types
-using ..Methods
+using ..StructNamedTrajectory
+using ..StructTimeSlice
+using ..MethodsNamedTrajectory
+using ..MethodsTimeSlice
 
 function plot(
     traj::NamedTrajectory,

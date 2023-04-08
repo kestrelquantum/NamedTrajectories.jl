@@ -2,11 +2,17 @@ module NamedTrajectories
 
 using Reexport
 
-include("types.jl")
-@reexport using .Types
+include("struct_named_trajectory.jl")
+@reexport using .StructNamedTrajectory
 
-include("methods.jl")
-@reexport using .Methods
+include("struct_time_slice.jl")
+@reexport using .StructTimeSlice
+
+include("methods_named_trajectory.jl")
+@reexport using .MethodsNamedTrajectory
+
+include("methods_time_slice.jl")
+@reexport using .MethodsTimeSlice
 
 include("utils.jl")
 @reexport using .Utils
