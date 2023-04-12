@@ -9,8 +9,7 @@ mutable struct NamedTrajectory
     data::AbstractMatrix{Float64}
     datavec::AbstractVector{Float64}
     T::Int
-    timestep::Float64
-    dynamical_timesteps::Bool
+    timestep::Union{Symbol,Float64}
     dim::Int
     dims::NamedTuple{dnames, <:Tuple{Vararg{Int}}} where dnames
     bounds::NamedTuple{bnames, <:Tuple{Vararg{BoundType}}} where bnames
@@ -25,19 +24,20 @@ end
 
 function NamedTrajectory(
     comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
-        {names, vals <: AbstractVecOrMat};
+        {names, vals <: AbstractMatrix};
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
-    timestep::Union{Nothing, Float64}=nothing,
-    dynamical_timesteps::Bool=false,
+    timestep::Union{Nothing,Symbol,Float64}=nothing,
     bounds=(;),
     initial=(;),
     final=(;),
     goal=(;),
 )
-    controls = (controls isa Symbol) ? (controls,) : controls
+    controls = controls isa Symbol ? (controls,) : controls
 
     @assert !isempty(controls)
     @assert !isnothing(timestep)
+    @assert timestep isa Symbol && timestep ∈ keys(comp_data) ||
+        timestep isa Real
 
     @assert all([k ∈ keys(comp_data) for k ∈ controls])
     @assert all([k ∈ keys(comp_data) for k ∈ keys(initial)])
@@ -128,7 +128,6 @@ function NamedTrajectory(
         datavec,
         T,
         timestep,
-        dynamical_timesteps,
         dim,
         dims,
         bounds,
@@ -149,8 +148,7 @@ function NamedTrajectory(
         names,
         <:Tuple{Vararg{AbstractVector{Int}}}
     } where names;
-    timestep::Union{Nothing, Float64}=nothing,
-    dynamical_timesteps::Bool=false,
+    timestep::Union{Nothing,Symbol,Float64}=nothing,
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     bounds=(;),
     initial=(;),
@@ -161,6 +159,8 @@ function NamedTrajectory(
 
     @assert !isempty(controls) "must specify at least one control"
     @assert !isnothing(timestep) "must specify a time step size"
+    @assert timestep isa Symbol && timestep ∈ keys(components) ||
+        timestep isa Real
 
     @assert all([k ∈ keys(components) for k ∈ controls])
     @assert all([k ∈ keys(components) for k ∈ keys(initial)])
@@ -210,7 +210,6 @@ function NamedTrajectory(
         datavec,
         T,
         timestep,
-        dynamical_timesteps,
         dim,
         dims,
         bounds,
@@ -236,7 +235,6 @@ function NamedTrajectory(
         datavec,
         Z.T,
         Z.timestep,
-        Z.dynamical_timesteps,
         Z.dim,
         Z.dims,
         Z.bounds,

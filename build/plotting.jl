@@ -22,7 +22,7 @@ function plot(
     series_color::Symbol=:glasbey_bw_minc_20_n256,
     ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}} =
         Symbol[],
-    dt_name::Union{Symbol,Nothing}=nothing
+    timestep_name::Union{Symbol,Nothing}=nothing
 )
     # convert single symbol to vector: comps
     if comps isa Symbol
@@ -37,7 +37,7 @@ function plot(
     @assert all([key ∈ keys(traj.components) for key ∈ comps])
     @assert all([key ∈ keys(traj.components) for key ∈ keys(transformations)])
 
-    ts = times(traj, dt_name)
+    ts = times(traj, timestep_name)
 
     # create figure
     fig = Figure(resolution=res)
