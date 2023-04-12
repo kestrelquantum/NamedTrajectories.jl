@@ -22,9 +22,8 @@ function plot(
     res::Tuple{Int, Int}=(1200, 800),
     titlesize::Int=25,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
-    ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}} =
-        Symbol[],
-    dt_name::Union{Symbol,Nothing}=nothing
+    ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}}=(),
+    ignore_timestep::Bool=true
 )
     # convert single symbol to vector: comps
     if comps isa Symbol
@@ -33,13 +32,15 @@ function plot(
 
     # convert single symbol to iterable: ignored labels
     if ignored_labels isa Symbol
-        ignored_labels = [ignored_labels]
+        ignored_labels = Symbol[ignored_labels]
+    elseif ignored_labels isa Tuple
+        ignored_labels = Symbol[ignored_labels...]
     end
 
     @assert all([key ∈ keys(traj.components) for key ∈ comps])
     @assert all([key ∈ keys(traj.components) for key ∈ keys(transformations)])
 
-    ts = times(traj, dt_name)
+    ts = times(traj)
 
     # create figure
     fig = Figure(resolution=res)
@@ -114,6 +115,10 @@ function plot(
 
     # plot normal components
     for key in comps
+
+        if traj.timestep isa Symbol && key == traj.timestep && ignore_timestep
+            continue
+        end
 
         # data matrix for key componenent of trajectory
         data = traj[key]
