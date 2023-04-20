@@ -2,36 +2,39 @@ module StructNamedTrajectory
 
 export NamedTrajectory
 
+using DataStructures
+
 
 const BoundType = Tuple{AbstractVector{<:Real}, AbstractVector{<:Real}}
 
-mutable struct NamedTrajectory
-    data::AbstractMatrix{Float64}
-    datavec::AbstractVector{Float64}
+mutable struct NamedTrajectory{R <: Real}
+    data::AbstractMatrix{R}
+    datavec::AbstractVector{R}
     T::Int
-    timestep::Union{Symbol,Float64}
+    timestep::Union{Symbol,R}
     dim::Int
     dims::NamedTuple{dnames, <:Tuple{Vararg{Int}}} where dnames
     bounds::NamedTuple{bnames, <:Tuple{Vararg{BoundType}}} where bnames
-    initial::NamedTuple{inames, <:Tuple{Vararg{AbstractVector{<:Real}}}} where inames
-    final::NamedTuple{fnames, <:Tuple{Vararg{AbstractVector{<:Real}}}} where fnames
-    goal::NamedTuple{gnames, <:Tuple{Vararg{AbstractVector{<:Real}}}} where gnames
+    initial::NamedTuple{inames, <:Tuple{Vararg{AbstractVector{R}}}} where inames
+    final::NamedTuple{fnames, <:Tuple{Vararg{AbstractVector{R}}}} where fnames
+    goal::NamedTuple{gnames, <:Tuple{Vararg{AbstractVector{R}}}} where gnames
     components::NamedTuple{cnames, <:Tuple{Vararg{AbstractVector{Int}}}} where cnames
     names::Tuple{Vararg{Symbol}}
-    controls_names::Tuple{Vararg{Symbol}}
+    state_names::Tuple{Vararg{Symbol}}
+    control_names::Tuple{Vararg{Symbol}}
 end
 
 
 function NamedTrajectory(
     comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
-        {names, vals <: AbstractMatrix};
+        {names, vals <: AbstractMatrix{R}};
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
-    timestep::Union{Nothing,Symbol,Float64}=nothing,
+    timestep::Union{Nothing,Symbol,R}=nothing,
     bounds=(;),
     initial=(;),
     final=(;),
     goal=(;),
-)
+) where R <: Real
     controls = controls isa Symbol ? (controls,) : controls
 
     @assert !isempty(controls)
@@ -52,7 +55,7 @@ function NamedTrajectory(
             for bound ∈ bounds
     ])
 
-    bounds_dict = Dict{Symbol,Any}(pairs(bounds))
+    bounds_dict = OrderedDict{Symbol,Any}(pairs(bounds))
     for (name, bound) ∈ bounds_dict
         if bound isa AbstractVector
             bounds_dict[name] = (-bound, bound)
@@ -123,7 +126,9 @@ function NamedTrajectory(
 
     names = Tuple(keys(comp_data))
 
-    return NamedTrajectory(
+    state_names = Tuple(k for k ∈ names if k ∉ controls)
+
+    return NamedTrajectory{R}(
         data,
         datavec,
         T,
@@ -136,25 +141,39 @@ function NamedTrajectory(
         goal,
         comps,
         names,
+        state_names,
         controls
     )
 end
 
+function NamedTrajectory(
+    comps::NamedTuple;
+    kwargs...
+)
+    @assert all([v isa AbstractMatrix || v isa AbstractVector for v ∈ values(comps)])
+    vals = [v isa AbstractVector ? reshape(v, 1, :) : v for v ∈ values(comps)]
+    comps = NamedTuple([(k => v) for (k, v) ∈ zip(keys(comps), vals)])
+    return NamedTrajectory(comps; kwargs...)
+end
+
+
+
+
 
 function NamedTrajectory(
-    datavec::AbstractVector{Float64},
+    datavec::AbstractVector{R},
     T::Int,
     components::NamedTuple{
         names,
         <:Tuple{Vararg{AbstractVector{Int}}}
     } where names;
-    timestep::Union{Nothing,Symbol,Float64}=nothing,
+    timestep::Union{Nothing,Symbol,R}=nothing,
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     bounds=(;),
     initial=(;),
     final=(;),
     goal=(;),
-)
+) where R <: Real
     controls = (controls isa Symbol) ? (controls,) : controls
 
     @assert !isempty(controls) "must specify at least one control"
@@ -174,7 +193,7 @@ function NamedTrajectory(
         for bound ∈ bounds
     ])
 
-    bounds_dict = Dict(pairs(bounds))
+    bounds_dict = OrderedDict(pairs(bounds))
     for (name, bound) ∈ bounds_dict
         if bound isa AbstractVector
             bounds_dict[name] = (-bound, bound)
@@ -205,7 +224,9 @@ function NamedTrajectory(
 
     names = Tuple(keys(components))
 
-    return NamedTrajectory(
+    state_names = Tuple(k for k ∈ names if k ∉ controls)
+
+    return NamedTrajectory{R}(
         data,
         datavec,
         T,
@@ -218,6 +239,7 @@ function NamedTrajectory(
         goal,
         components,
         names,
+        state_names,
         controls
     )
 end
@@ -230,7 +252,7 @@ function NamedTrajectory(
 
     data = reshape(view(datavec, :), :, Z.T)
 
-    return NamedTrajectory(
+    return NamedTrajectory{R}(
         data,
         datavec,
         Z.T,
@@ -243,21 +265,77 @@ function NamedTrajectory(
         Z.goal,
         Z.components,
         Z.names,
-        Z.controls_names
+        Z.state_names,
+        Z.control_names
     )
 end
 
 function NamedTrajectory(
-    data::AbstractMatrix{Float64},
+    data::AbstractMatrix{R},
+    traj::NamedTrajectory
+) where R <: Real
+    @assert size(data) == size(traj.data)
+
+    datavec = vec(data)
+
+    return NamedTrajectory{R}(
+        data,
+        datavec,
+        traj.T,
+        traj.timestep,
+        traj.dim,
+        traj.dims,
+        traj.bounds,
+        traj.initial,
+        traj.final,
+        traj.goal,
+        traj.components,
+        traj.names,
+        traj.state_names,
+        traj.control_names
+    )
+end
+
+function NamedTrajectory(
+    data::AbstractMatrix{R},
     components::NamedTuple{
         names,
         <:Tuple{Vararg{AbstractVector{Int}}}
     } where names;
     kwargs...
-)
+) where R <: Real
     T = size(data, 2)
     datavec = vec(data)
     return NamedTrajectory(datavec, T, components; kwargs...)
+end
+
+function NamedTrajectory(
+    comps::NamedTuple{
+        names,
+        <:Tuple{Vararg{AbstractMatrix{R}}}
+    } where names,
+    traj::NamedTrajectory;
+) where R <: Real
+    @assert all([k ∈ traj.names for k ∈ keys(comps)])
+
+    controls = Tuple([name for name ∈ traj.control_names if name ∈ keys(comps)])
+    @assert !isempty(controls) "must specify at least one control"
+
+    bounds = NamedTuple([(k => traj.bounds[k]) for k ∈ keys(comps) if k ∈ keys(traj.bounds)])
+    initial = NamedTuple([(k => traj.initial[k]) for k ∈ keys(comps) if k ∈ keys(traj.initial)])
+    final = NamedTuple([(k => traj.final[k]) for k ∈ keys(comps) if k ∈ keys(traj.final)])
+    goal = NamedTuple([(k => traj.goal[k]) for k ∈ keys(comps) if k ∈ keys(traj.goal)])
+
+    return NamedTrajectory(
+        comps;
+        controls=controls,
+        timestep=traj.timestep,
+        bounds=bounds,
+        initial=initial,
+        final=final,
+        goal=goal,
+    )
+
 end
 
 end
