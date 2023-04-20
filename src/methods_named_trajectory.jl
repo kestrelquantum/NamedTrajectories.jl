@@ -1,11 +1,24 @@
 module MethodsNamedTrajectory
 
+export components
 export add_component!
+export remove_component
 export update!
 export times
 
+using DataStructures
+
 using ..StructNamedTrajectory
 using ..StructTimeSlice
+
+function Base.copy(traj::NamedTrajectory)
+    return NamedTrajectory(copy(traj.data), traj)
+end
+
+function components(traj::NamedTrajectory)
+    data = [traj[comp] for comp ∈ traj.names]
+    return NamedTuple(zip(traj.names, data))
+end
 
 function add_component!(
     traj::NamedTrajectory,
@@ -30,7 +43,7 @@ function add_component!(
 
     # update components
 
-    comp_dict = Dict(pairs(traj.components))
+    comp_dict = OrderedDict(pairs(traj.components))
 
     comp_dict[name] = (traj.dim + 1):(traj.dim + dim)
 
@@ -47,7 +60,7 @@ function add_component!(
 
     traj.dim += dim
 
-    dim_dict = Dict(pairs(traj.dims))
+    dim_dict = OrderedDict(pairs(traj.dims))
 
     dim_dict[name] = dim
 
@@ -75,6 +88,12 @@ function add_component!(
     return nothing
 end
 
+function remove_component(traj::NamedTrajectory, name::Symbol)
+    @assert name ∈ traj.names
+    comps = NamedTuple([(key => data) for (key, data) ∈ pairs(components(traj)) if key != name])
+    return NamedTrajectory(comps, traj)
+end
+
 function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float64})
     @assert comp ∈ keys(traj.components)
     @assert size(data, 1) == length(traj.components[comp])
@@ -83,6 +102,14 @@ function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float
     traj.data[traj.components[comp], :] = data
     traj.datavec = vec(view(traj.data, :, :))
 end
+
+# TODO: implement and test this
+# function update_bounds!(traj::NamedTrajectory, comp::Symbol, bounds::AbstractMatrix{Float64})
+#     @assert comp ∈ keys(traj.components)
+#     @assert size(bounds, 1) == 2
+#     @assert size(bounds, 2) == length(traj.components[comp])
+#     traj.bounds[traj.components[comp], :] = bounds
+# end
 
 function times(traj::NamedTrajectory)
     if traj.timestep isa Symbol

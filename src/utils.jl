@@ -21,16 +21,18 @@ function load_traj(filename::String)
 end
 
 function derivative(X::AbstractMatrix, Δt::AbstractVector)
+    @assert size(X, 2) == length(Δt) "number of columns of X ($(size(X, 2))) must equal length of Δt ($(length(Δt))"
     dX = similar(X)
-    dxs[:, 1] = zeros(size(X, 1))
-    for t = axes(X, 2)
+    dX[:, 1] = zeros(size(X, 1))
+    for t = 2:size(X, 2)
         Δx = X[:, t] - X[:, t - 1]
-        Δt = Δt[t]
-        dX[:, t] .= Δx / Δt
+        h = Δt[t - 1]
+        dX[:, t] .= Δx / h
     end
     return dX
 end
 
+# TODO: fix this function
 function integral(X::AbstractMatrix, Δt::AbstractVector)
     ∫X = similar(X)
     ∫X[:, 1] = X[:, 1] * Δt[1]

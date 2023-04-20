@@ -94,7 +94,7 @@ function plot(
             # create axis for transformed data
             ax = Axis(
                 fig[ax_count + 1, :];
-                title=latexstring(key, "(t)", "\\text{ transformation } $j"),
+                title=latexstring(key, "(t)", "\\text{ transformation }"),
                 titlesize=titlesize,
                 xlabel=L"t"
             )
