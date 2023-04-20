@@ -46,7 +46,7 @@ test: methods.jl
 
     @test traj.a ≈ data
     @test name ∈ traj.names
-    @test name ∈ traj.controls_names
+    @test name ∈ traj.control_names
 
 
     # testing adding control vector component
@@ -59,5 +59,5 @@ test: methods.jl
 
     @test vec(traj.b) ≈ vec(data)
     @test name ∈ traj.names
-    @test name ∈ traj.controls_names
+    @test name ∈ traj.control_names
 end

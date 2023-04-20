@@ -11,7 +11,7 @@ struct TimeSlice
         cnames, <:Tuple{Vararg{AbstractVector{Int}}}
     } where cnames
     names::Tuple{Vararg{Symbol}}
-    controls_names::Tuple{Vararg{Symbol}}
+    control_names::Tuple{Vararg{Symbol}}
 end
 
 function TimeSlice(
@@ -20,7 +20,7 @@ function TimeSlice(
 )
     @assert 1 ≤ t ≤ Z.T
     data = view(Z.data, :, t)
-    return TimeSlice(t, data, Z.components, Z.names, Z.controls_names)
+    return TimeSlice(t, data, Z.components, Z.names, Z.control_names)
 end
 
 end
