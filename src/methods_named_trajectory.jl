@@ -67,7 +67,7 @@ function add_component!(
     if type == :state
         dim_dict[:states] += dim
     else
-        traj.controls_names = (traj.controls_names..., name)
+        traj.control_names = (traj.control_names..., name)
         dim_dict[:controls] += dim
     end
 
