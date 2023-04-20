@@ -245,9 +245,9 @@ function NamedTrajectory(
 end
 
 function NamedTrajectory(
-    datavec::AbstractVector{Float64},
+    datavec::AbstractVector{R},
     Z::NamedTrajectory
-)
+) where R <: Real
     @assert length(datavec) == length(Z.datavec)
 
     data = reshape(view(datavec, :), :, Z.T)
