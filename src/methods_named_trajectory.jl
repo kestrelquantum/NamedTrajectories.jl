@@ -9,7 +9,7 @@ export times
 using DataStructures
 
 using ..StructNamedTrajectory
-using ..StructTimeSlice
+using ..StructKnotPoint
 
 function Base.copy(traj::NamedTrajectory)
     return NamedTrajectory(copy(traj.data), traj)
@@ -125,11 +125,11 @@ end
 """
 Base.size(traj::NamedTrajectory) = (dim = traj.dim, T = traj.T)
 
-Base.getindex(traj::NamedTrajectory, t::Int) = TimeSlice(traj, t)
+Base.getindex(traj::NamedTrajectory, t::Int) = KnotPoint(traj, t)
 
 Base.lastindex(traj::NamedTrajectory) = traj.T
 
-function Base.getindex(traj::NamedTrajectory, ts::AbstractVector{Int})::Vector{TimeSlice}
+function Base.getindex(traj::NamedTrajectory, ts::AbstractVector{Int})::Vector{KnotPoint}
     return [traj[t] for t ∈ ts]
 end
 

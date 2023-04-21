@@ -1,9 +1,9 @@
-module MethodsTimeSlice
+module MethodsKnotPoint
 
-using ..StructTimeSlice
+using ..StructKnotPoint
 
-function Base.getproperty(slice::TimeSlice, symb::Symbol)
-    if symb in fieldnames(TimeSlice)
+function Base.getproperty(slice::KnotPoint, symb::Symbol)
+    if symb in fieldnames(KnotPoint)
         return getfield(slice, symb)
     else
         indices = slice.components[symb]
@@ -11,8 +11,8 @@ function Base.getproperty(slice::TimeSlice, symb::Symbol)
     end
 end
 
-function Base.getindex(slice::TimeSlice, symb::Symbol)
-    if symb in fieldnames(TimeSlice)
+function Base.getindex(slice::KnotPoint, symb::Symbol)
+    if symb in fieldnames(KnotPoint)
         return getfield(slice, symb)
     else
         indices = slice.components[symb]

@@ -5,14 +5,14 @@ using Reexport
 include("struct_named_trajectory.jl")
 @reexport using .StructNamedTrajectory
 
-include("struct_time_slice.jl")
-@reexport using .StructTimeSlice
+include("struct_knot_point.jl")
+@reexport using .StructKnotPoint
 
 include("methods_named_trajectory.jl")
 @reexport using .MethodsNamedTrajectory
 
-include("methods_time_slice.jl")
-@reexport using .MethodsTimeSlice
+include("methods_knot_point.jl")
+@reexport using .MethodsKnotPoint
 
 include("utils.jl")
 @reexport using .Utils

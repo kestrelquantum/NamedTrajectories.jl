@@ -23,7 +23,7 @@ Pkg.add(NamedTrajectories)
 
 ## Usage
 
-Users can define `NamedTrajectory` types which have lots of useful functionality. For example, you can access the data by name or index.  In the case of an index, a `TimeSlice` is returned which contains the data for that timestep.
+Users can define `NamedTrajectory` types which have lots of useful functionality. For example, you can access the data by name or index.  In the case of an index, a `KnotPoint` is returned which contains the data for that timestep.
 
 ```julia
 using NamedTrajectories
@@ -45,7 +45,7 @@ traj = NamedTrajectory(components; timestep=dt, controls=:u)
 traj.x # returns 3x10 matrix of x data
 traj.u # returns 2x10 matrix of u data
 
-z1 = traj[1] # returns TimeSlice with x and u data
+z1 = traj[1] # returns KnotPoint with x and u data
 
 z1.x # returns 3 element vector of x data at timestep 1
 z1.u # returns 2 element vector of u data at timestep 1

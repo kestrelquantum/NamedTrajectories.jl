@@ -8,7 +8,7 @@ export integral
 using JLD2
 
 using ..StructNamedTrajectory
-using ..StructTimeSlice
+using ..StructKnotPoint
 
 function JLD2.save(filename::String, traj::NamedTrajectory)
     @assert split(filename, ".")[end] == "jld2"

@@ -6,9 +6,9 @@ using CairoMakie
 using LaTeXStrings
 
 using ..StructNamedTrajectory
-using ..StructTimeSlice
+using ..StructKnotPoint
 using ..MethodsNamedTrajectory
-using ..MethodsTimeSlice
+using ..MethodsKnotPoint
 
 function plot(
     traj::NamedTrajectory,
