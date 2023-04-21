@@ -1,10 +1,10 @@
-module StructTimeSlice
+module StructKnotPoint
 
-export TimeSlice
+export KnotPoint
 
 using ..StructNamedTrajectory
 
-struct TimeSlice
+struct KnotPoint
     t::Int
     data::AbstractVector{Float64}
     components::NamedTuple{
@@ -14,13 +14,13 @@ struct TimeSlice
     control_names::Tuple{Vararg{Symbol}}
 end
 
-function TimeSlice(
+function KnotPoint(
     Z::NamedTrajectory,
     t::Int
 )
     @assert 1 ≤ t ≤ Z.T
     data = view(Z.data, :, t)
-    return TimeSlice(t, data, Z.components, Z.names, Z.control_names)
+    return KnotPoint(t, data, Z.components, Z.names, Z.control_names)
 end
 
 end

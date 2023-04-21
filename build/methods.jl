@@ -98,11 +98,11 @@ end
 """
 Base.size(traj::NamedTrajectory) = (dim = traj.dim, T = traj.T)
 
-Base.getindex(traj::NamedTrajectory, t::Int) = TimeSlice(traj, t)
+Base.getindex(traj::NamedTrajectory, t::Int) = KnotPoint(traj, t)
 
 Base.lastindex(traj::NamedTrajectory) = traj.T
 
-function Base.getindex(traj::NamedTrajectory, ts::AbstractVector{Int})::Vector{TimeSlice}
+function Base.getindex(traj::NamedTrajectory, ts::AbstractVector{Int})::Vector{KnotPoint}
     return [traj[t] for t ∈ ts]
 end
 
@@ -125,8 +125,8 @@ function Base.getproperty(traj::NamedTrajectory, symb::Symbol)
     end
 end
 
-function Base.getproperty(slice::TimeSlice, symb::Symbol)
-    if symb in fieldnames(TimeSlice)
+function Base.getproperty(slice::KnotPoint, symb::Symbol)
+    if symb in fieldnames(KnotPoint)
         return getfield(slice, symb)
     else
         indices = slice.components[symb]
@@ -134,8 +134,8 @@ function Base.getproperty(slice::TimeSlice, symb::Symbol)
     end
 end
 
-function Base.getindex(slice::TimeSlice, symb::Symbol)
-    if symb in fieldnames(TimeSlice)
+function Base.getindex(slice::KnotPoint, symb::Symbol)
+    if symb in fieldnames(KnotPoint)
         return getfield(slice, symb)
     else
         indices = slice.components[symb]

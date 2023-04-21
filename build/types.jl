@@ -1,7 +1,7 @@
 module Types
 
 export NamedTrajectory
-export TimeSlice
+export KnotPoint
 
 """
 We define the following struct to store and organize the various components of a trajectory. (e.g. the state `x`, control `u`, and control derivative `du` and `ddu`)
@@ -284,7 +284,7 @@ function NamedTrajectory(
 end
 
 
-struct TimeSlice
+struct KnotPoint
     t::Int
     data::AbstractVector{Float64}
     components::NamedTuple{
@@ -294,13 +294,13 @@ struct TimeSlice
     controls_names::Tuple{Vararg{Symbol}}
 end
 
-function TimeSlice(
+function KnotPoint(
     Z::NamedTrajectory,
     t::Int
 )
     @assert 1 ≤ t ≤ Z.T
     data = view(Z.data, :, t)
-    return TimeSlice(t, data, Z.components, Z.names, Z.controls_names)
+    return KnotPoint(t, data, Z.components, Z.names, Z.controls_names)
 end
 
 end
