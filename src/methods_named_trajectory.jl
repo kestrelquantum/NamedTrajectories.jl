@@ -94,6 +94,12 @@ function remove_component(traj::NamedTrajectory, name::Symbol)
     return NamedTrajectory(comps, traj)
 end
 
+function remove_components(traj::NamedTrajectory, names::Vector{Symbol})
+    @assert all([name ∈ traj.names for name ∈ names])
+    comps = NamedTuple([(key => data) for (key, data) ∈ pairs(components(traj)) if !(key ∈ names)])
+    return NamedTrajectory(comps, traj)
+end
+
 function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float64})
     @assert comp ∈ keys(traj.components)
     @assert size(data, 1) == length(traj.components[comp])
@@ -113,7 +119,7 @@ end
 
 function times(traj::NamedTrajectory)
     if traj.timestep isa Symbol
-        return cumsum(vec(traj[traj.timestep]))
+        return cumsum(vec([0.0, traj[traj.timestep][1:end-1]]))
     else
         return [0:traj.T-1...] .* traj.timestep
     end
