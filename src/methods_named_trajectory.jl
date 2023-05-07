@@ -3,6 +3,7 @@ module MethodsNamedTrajectory
 export components
 export add_component!
 export remove_component
+export remove_components
 export update!
 export times
 
