@@ -120,9 +120,9 @@ end
 
 function times(traj::NamedTrajectory)
     if traj.timestep isa Symbol
-        return cumsum([0.0, vec(traj[traj.timestep][1:end-1])])
+        return cumsum([0.0, vec(traj[traj.timestep])[1:end-1]...])
     else
-        return [0:traj.T-1...] .* traj.timestep
+        return [0:traj.T-1...] * traj.timestep
     end
 end
 
