@@ -250,6 +250,10 @@ function NamedTrajectory(
 ) where R <: Real
     @assert length(datavec) == length(Z.datavec)
 
+    # collecting here to prevent overlapping views
+    # TODO: is this necessary?
+    datavec = collect(datavec)
+
     data = reshape(view(datavec, :), :, Z.T)
 
     return NamedTrajectory{R}(
@@ -276,7 +280,11 @@ function NamedTrajectory(
 ) where R <: Real
     @assert size(data) == size(traj.data)
 
-    datavec = vec(data)
+    # collecting here to prevent overlapping views
+    # TODO: is this necessary?
+    datavec = vec(collect(data))
+
+    data = reshape(view(datavec, :), :, traj.T)
 
     return NamedTrajectory{R}(
         data,
