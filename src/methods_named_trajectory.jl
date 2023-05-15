@@ -22,6 +22,12 @@ function components(traj::NamedTrajectory)
     return NamedTuple(zip(traj.names, data))
 end
 
+
+"""
+    timesteps(::NamedTrajectory)
+
+Return the timesteps of a trajectory as a vector.
+"""
 function timesteps(traj::NamedTrajectory)
     if traj.timestep isa Symbol
         return vec(traj[traj.timestep])
