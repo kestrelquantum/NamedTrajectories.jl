@@ -6,6 +6,7 @@ export remove_component
 export remove_components
 export update!
 export times
+export timesteps
 
 using DataStructures
 
@@ -20,6 +21,15 @@ function components(traj::NamedTrajectory)
     data = [traj[comp] for comp ∈ traj.names]
     return NamedTuple(zip(traj.names, data))
 end
+
+function timesteps(traj::NamedTrajectory)
+    if traj.timestep isa Symbol
+        return vec(traj[traj.timestep])
+    else
+        return fill(traj.timestep, traj.T)
+    end
+end
+
 
 function add_component!(
     traj::NamedTrajectory,
@@ -168,14 +178,14 @@ function Base.:*(traj::NamedTrajectory, α::Float64)
 end
 
 function Base.:+(traj1::NamedTrajectory, traj2::NamedTrajectory)
-    @assert sort(traj1.names) == sort(traj2.names)
+    @assert sort([traj1.names...]) == sort([traj2.names...])
     @assert traj1.dim == traj2.dim
     @assert traj1.T == traj2.T
     return NamedTrajectory(traj1.datavec + traj2.datavec, traj1)
 end
 
 function Base.:-(traj1::NamedTrajectory, traj2::NamedTrajectory)
-    @assert sort(traj1.names) == sort(traj2.names)
+    @assert sort([traj1.names...]) == sort([traj2.names...])
     @assert traj1.dim == traj2.dim
     @assert traj1.T == traj2.T
     return NamedTrajectory(traj1.datavec - traj2.datavec, traj1)
