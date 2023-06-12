@@ -13,10 +13,53 @@ using DataStructures
 using ..StructNamedTrajectory
 using ..StructKnotPoint
 
+
+"""
+    copy(::NamedTrajectory)
+
+Returns a copy of the trajectory.
+"""
 function Base.copy(traj::NamedTrajectory)
     return NamedTrajectory(copy(traj.data), traj)
 end
 
+"""
+    isequal(traj1::NamedTrajectory, traj2::NamedTrajectory)
+
+Check if trajectories are equal w.r.t. data using `Base.isequal`
+"""
+function Base.isequal(traj1::NamedTrajectory, traj2::NamedTrajectory)
+    if isequal(traj1.data, traj2.data) &&
+        isequal(traj1.names, traj2.names)
+        return true
+    else
+        return false
+    end
+end
+
+
+"""
+    :(==)(traj1::NamedTrajectory, traj2::NamedTrajectory)
+
+Check if trajectories are equal w.r.t. using `Base.:(==)`
+"""
+function Base.:(==)(traj1::NamedTrajectory, traj2::NamedTrajectory)
+    if traj1.data == traj2.data &&
+        traj1.names == traj2.names
+        return true
+    else
+        return false
+    end
+end
+
+
+
+
+"""
+    components(::NamedTrajectory)
+
+Returns a NamedTuple containing the names and corresponding data matrices of the trajectory.
+"""
 function components(traj::NamedTrajectory)
     data = [traj[comp] for comp ∈ traj.names]
     return NamedTuple(zip(traj.names, data))
@@ -26,7 +69,7 @@ end
 """
     timesteps(::NamedTrajectory)
 
-Return the timesteps of a trajectory as a vector.
+Returns the timesteps of a trajectory as a vector.
 """
 function timesteps(traj::NamedTrajectory)
     if traj.timestep isa Symbol
