@@ -1,5 +1,5 @@
 """
-test: methods.jl
+test: methods_named_trajectories.jl
 """
 
 
@@ -7,12 +7,28 @@ test: methods.jl
 
     T = 5
 
-    data = (
+    fixed_time_data = (
         x = rand(3, T),
         u = rand(2, T)
     )
 
-    traj = NamedTrajectory(data; timestep=0.1, controls=:u)
+    free_time_data = (
+        x = rand(3, T),
+        u = rand(2, T),
+        Δt = rand(1, T)
+    )
+
+    fixed_time_traj = NamedTrajectory(fixed_time_data; timestep=0.1, controls=:u)
+    free_time_traj = NamedTrajectory(free_time_data; timestep=:Δt, controls=:u)
+
+
+    # testing copying and equality checks
+
+    fixed_time_traj_copy = copy(fixed_time_traj)
+    free_time_traj_copy = copy(free_time_traj)
+
+    @test isequal(fixed_time_traj, fixed_time_traj_copy)
+    @test fixed_time_traj == fixed_time_traj_copy
 
     # testing adding state matrix component
 
