@@ -38,13 +38,12 @@ end
 
 derivative(X::AbstractMatrix, Δt::Float64) = derivative(X, fill(Δt, size(X, 2)))
 
-# TODO: fix this function
 function integral(X::AbstractMatrix, Δt::AbstractVector)
     ∫X = similar(X)
-    ∫X[:, 1] = X[:, 1] * Δt[1]
-    for t = axes(X, 2)
-        Δt = Δt[t]
-        ∫X[:, t] = ∫X[:, t - 1] + X[:, t] * Δt
+    ∫X[:, 1] = zeros(size(X, 1))
+    for t = 2:size(X, 2)
+        # trapezoidal rule
+        ∫X[:, t] = ∫X[:, t-1] + (X[:, t] + X[:, t-1])/2 * Δt[t-1]
     end
     return ∫X
 end
