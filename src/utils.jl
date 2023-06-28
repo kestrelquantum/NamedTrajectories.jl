@@ -20,17 +20,23 @@ function load_traj(filename::String)
     return load(filename, "traj")
 end
 
-function derivative(X::AbstractMatrix, Δt::AbstractVector)
+function derivative(X::AbstractMatrix, Δt::AbstractVecOrMat)
+    if Δt isa AbstractMatrix
+        @assert size(X, 1) == 1 "X must be a row vector if Δt is a matrix"
+        Δt = Δt[1, :]
+    end
     @assert size(X, 2) == length(Δt) "number of columns of X ($(size(X, 2))) must equal length of Δt ($(length(Δt))"
     dX = similar(X)
     dX[:, 1] = zeros(size(X, 1))
-    for t = 2:size(X, 2)
+    for t = axes(X, 2)[2:end]
         Δx = X[:, t] - X[:, t - 1]
         h = Δt[t - 1]
         dX[:, t] .= Δx / h
     end
     return dX
 end
+
+derivative(X::AbstractMatrix, Δt::Float64) = derivative(X, fill(Δt, size(X, 2)))
 
 # TODO: fix this function
 function integral(X::AbstractMatrix, Δt::AbstractVector)
@@ -42,6 +48,8 @@ function integral(X::AbstractMatrix, Δt::AbstractVector)
     end
     return ∫X
 end
+
+integral(X::AbstractMatrix, Δt::Float64) = integral(X, fill(Δt, size(X, 2)))
 
 
 end

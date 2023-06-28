@@ -79,7 +79,11 @@ function timesteps(traj::NamedTrajectory)
     end
 end
 
+"""
+    add_component!(traj, name::Symbol, data::AbstractVecOrMat; type={:state, :control})
 
+Add a component to the trajectory.
+"""
 function add_component!(
     traj::NamedTrajectory,
     name::Symbol,
@@ -148,24 +152,39 @@ function add_component!(
     return nothing
 end
 
+"""
+    remove_component(traj, name::Symbol)
+
+Remove a component from the trajectory.
+"""
 function remove_component(traj::NamedTrajectory, name::Symbol)
     @assert name ∈ traj.names
     comps = NamedTuple([(key => data) for (key, data) ∈ pairs(components(traj)) if key != name])
     return NamedTrajectory(comps, traj)
 end
 
+"""
+    remove_components(traj, names::Vector{Symbol})
+
+Remove a set of components from the trajectory.
+"""
 function remove_components(traj::NamedTrajectory, names::Vector{Symbol})
     @assert all([name ∈ traj.names for name ∈ names])
     comps = NamedTuple([(key => data) for (key, data) ∈ pairs(components(traj)) if !(key ∈ names)])
     return NamedTrajectory(comps, traj)
 end
 
-function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float64})
-    @assert comp ∈ keys(traj.components)
-    @assert size(data, 1) == length(traj.components[comp])
+"""
+    update!(traj, name::Symbol, data::AbstractMatrix{Float64})
+
+Update a component of the trajectory.
+"""
+function update!(traj::NamedTrajectory, name::Symbol, data::AbstractMatrix{Float64})
+    @assert name ∈ traj.names
+    @assert size(data, 1) == traj.dims[name]
     @assert size(data, 2) == traj.T
     # TODO: test to see if updating both matrix and vec is necessary
-    traj.data[traj.components[comp], :] = data
+    traj.data[traj.components[name], :] = data
     traj.datavec = vec(view(traj.data, :, :))
 end
 
@@ -177,6 +196,12 @@ end
 #     traj.bounds[traj.components[comp], :] = bounds
 # end
 
+
+"""
+    times(traj)::Vector{Float64}
+
+Returns the times of a trajectory as a vector.
+"""
 function times(traj::NamedTrajectory)
     if traj.timestep isa Symbol
         return cumsum([0.0, vec(traj[traj.timestep])[1:end-1]...])
@@ -191,24 +216,41 @@ end
 """
 Base.size(traj::NamedTrajectory) = (dim = traj.dim, T = traj.T)
 
+"""
+    getindex(traj, t::Int)::KnotPoint
+
+Returns the knot point at time `t`.
+"""
 Base.getindex(traj::NamedTrajectory, t::Int) = KnotPoint(traj, t)
 
-Base.lastindex(traj::NamedTrajectory) = traj.T
+"""
+    getindex(traj, ts::AbstractVector{Int})::Vector{KnotPoint}
 
+Returns the knot points at times `ts`.
+"""
 function Base.getindex(traj::NamedTrajectory, ts::AbstractVector{Int})::Vector{KnotPoint}
     return [traj[t] for t ∈ ts]
 end
 
+"""
+    lastindex(traj::NamedTrajectory)
+
+Returns the final time index of the trajectory.
+"""
+Base.lastindex(traj::NamedTrajectory) = traj.T
+
+"""
+    getindex(traj, symb::Symbol)
+
+Dispatches indexing of trajectories as either accessing a component or a property via `getproperty`.
+"""
 Base.getindex(traj::NamedTrajectory, symb::Symbol) = getproperty(traj, symb)
 
-function Base.setproperty!(traj::NamedTrajectory, symb::Symbol, val::AbstractMatrix)
-    if symb ∈ fieldnames(NamedTrajectory)
-        setfield!(traj, symb, val)
-    else
-        update!(traj, symb, val)
-    end
-end
+"""
+    getproperty(traj, symb::Symbol)
 
+Returns the component of the trajectory with name `symb` or the property of the trajectory with name `symb`.
+"""
 function Base.getproperty(traj::NamedTrajectory, symb::Symbol)
     if symb ∈ fieldnames(NamedTrajectory)
         return getfield(traj, symb)
@@ -217,6 +259,21 @@ function Base.getproperty(traj::NamedTrajectory, symb::Symbol)
         return traj.data[indices, :]
     end
 end
+
+"""
+    setproperty!(traj, name::Symbol, val::Any)
+
+Dispatches setting properties of trajectories as either setting a component or a property via `setfield!` or `update!`.
+"""
+function Base.setproperty!(traj::NamedTrajectory, symb::Symbol, val::Any)
+    if symb ∈ fieldnames(NamedTrajectory)
+        setfield!(traj, symb, val)
+    else
+        update!(traj, symb, val)
+    end
+end
+
+
 
 function Base.:*(α::Float64, traj::NamedTrajectory)
     return NamedTrajectory(α * traj.datavec, traj)

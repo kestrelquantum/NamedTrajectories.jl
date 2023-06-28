@@ -36,9 +36,17 @@ test: methods_named_trajectories.jl
     data = rand(2, T)
     type = :state
 
-    add_component!(traj, name, data; type=type)
-    @test traj.z ≈ data
-    @test name ∈ traj.names
+    # case: fixed time
+
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test fixed_time_traj.z ≈ data
+    @test name ∈ fixed_time_traj.names
+
+    # case: free time
+
+    add_component!(free_time_traj, name, data; type=type)
+    @test free_time_traj.z ≈ data
+    @test name ∈ free_time_traj.names
 
     # testing adding state vector component
 
@@ -46,11 +54,18 @@ test: methods_named_trajectories.jl
     data = rand(T)
     type = :state
 
-    add_component!(traj, name, data; type=type)
+    # case: fixed time
 
-    @test vec(traj.y) ≈ vec(data)
-    @test name ∈ traj.names
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test vec(fixed_time_traj.y) ≈ vec(data)
+    @test name ∈ fixed_time_traj.names
 
+
+    # case: free time
+
+    add_component!(free_time_traj, name, data; type=type)
+    @test vec(free_time_traj.y) ≈ vec(data)
+    @test name ∈ free_time_traj.names
 
     # testing adding control matrix component
 
@@ -58,11 +73,20 @@ test: methods_named_trajectories.jl
     data = rand(2, T)
     type = :control
 
-    add_component!(traj, name, data; type=type)
+    # case: fixed time
 
-    @test traj.a ≈ data
-    @test name ∈ traj.names
-    @test name ∈ traj.control_names
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test fixed_time_traj.a ≈ data
+    @test name ∈ fixed_time_traj.names
+    @test name ∈ fixed_time_traj.control_names
+
+
+    # case: free time
+
+    add_component!(free_time_traj, name, data; type=type)
+    @test free_time_traj.a ≈ data
+    @test name ∈ free_time_traj.names
+    @test name ∈ free_time_traj.control_names
 
 
     # testing adding control vector component
@@ -71,9 +95,17 @@ test: methods_named_trajectories.jl
     data = rand(T)
     type = :control
 
-    add_component!(traj, name, data; type=type)
+    # case: fixed time
 
-    @test vec(traj.b) ≈ vec(data)
-    @test name ∈ traj.names
-    @test name ∈ traj.control_names
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test vec(fixed_time_traj.b) ≈ vec(data)
+    @test name ∈ fixed_time_traj.names
+    @test name ∈ fixed_time_traj.control_names
+
+    # case: free time
+
+    add_component!(free_time_traj, name, data; type=type)
+    @test vec(free_time_traj.b) ≈ vec(data)
+    @test name ∈ free_time_traj.names
+    @test name ∈ free_time_traj.control_names
 end
