@@ -194,6 +194,9 @@ function NamedTrajectory(
         (bound isa BoundType)
         for bound ∈ bounds
     ])
+    if timestep isa Symbol && !in(timestep, controls)
+        controls = (controls..., timestep)
+    end
 
     bounds_dict = OrderedDict(pairs(bounds))
     for (name, bound) ∈ bounds_dict
