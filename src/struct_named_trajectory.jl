@@ -54,7 +54,9 @@ function NamedTrajectory(
         bound isa Tuple{<:Real,<:Real}
             for bound ∈ bounds
     ])
-
+    if timestep isa Symbol && !in(timestep, controls)
+        controls = (controls..., timestep)
+    end
     bounds_dict = OrderedDict{Symbol,Any}(pairs(bounds))
     for (name, bound) ∈ bounds_dict
         if bound isa AbstractVector
