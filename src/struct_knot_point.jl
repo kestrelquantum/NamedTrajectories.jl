@@ -7,6 +7,7 @@ using ..StructNamedTrajectory
 struct KnotPoint
     t::Int
     data::AbstractVector{Float64}
+    timestep::Float64
     components::NamedTuple{
         cnames, <:Tuple{Vararg{AbstractVector{Int}}}
     } where cnames
@@ -19,8 +20,8 @@ function KnotPoint(
     t::Int
 )
     @assert 1 ≤ t ≤ Z.T
-    data = view(Z.data, :, t)
-    return KnotPoint(t, data, Z.components, Z.names, Z.control_names)
+    timestep = timesteps(Z)[t]
+    return KnotPoint(t, data, timestep, Z.components, Z.names, Z.control_names)
 end
 
 end
