@@ -108,4 +108,110 @@ test: methods_named_trajectories.jl
     @test vec(free_time_traj.b) ≈ vec(data)
     @test name ∈ free_time_traj.names
     @test name ∈ free_time_traj.control_names
+
+    # testing removing control component
+
+    name = :a
+
+    # case: fixed time
+
+    fixed_time_traj = remove_component(fixed_time_traj, name)
+    @test name ∉ fixed_time_traj.names
+    @test name ∉ fixed_time_traj.control_names
+
+    # case: free time
+
+    free_time_traj = remove_component(free_time_traj, name)
+    @test name ∉ free_time_traj.names
+    @test name ∉ free_time_traj.control_names
+
+    # testing removing state components
+
+    names = [:z, :y]
+
+    # case: fixed time
+
+    fixed_time_traj = remove_components(fixed_time_traj, names)
+    @test all(name ∉ fixed_time_traj.names for name in names)
+
+    # case: free time
+
+    free_time_traj = remove_components(free_time_traj, names)
+    @test all(name ∉ free_time_traj.names for name in names)
+
+    # testing updating traj data
+
+    name = :x
+    data = rand(3, T)
+
+    # case: fixed time
+
+    update!(fixed_time_traj, name, data)
+    @test fixed_time_traj.x == data
+
+    # case: free time
+
+    update!(free_time_traj, name, data)
+    @test free_time_traj.x == data
+
+    # testing returning times
+
+    # case: free time
+
+    @test times(free_time_traj) ≈ [0.0, cumsum(vec(free_time_traj.Δt))[1:end-1]...]
+
+    # case: fixed time
+
+    @test times(fixed_time_traj) ≈ 0.1 .* [0:T-1...]
+
+
+    # test get size
+
+    @test size(fixed_time_traj) == (dim = sum(fixed_time_traj.dims[fixed_time_traj.names]), T = T)
+    @test size(free_time_traj) == (dim = sum(free_time_traj.dims[free_time_traj.names]), T = T)
+
+
+    # ---------------------------------------------------------
+    # knot point methods
+    # ---------------------------------------------------------
+
+
+    # test getindex
+    # ---------------------------------------------------------
+    # freetime
+    @test free_time_traj[1] isa KnotPoint
+    @test free_time_traj[1].x == free_time_traj.x[:, 1]
+    @test free_time_traj[end] isa KnotPoint
+    @test free_time_traj[end].x == free_time_traj.x[:, end]
+    @test free_time_traj[:x] == free_time_traj.x
+    @test free_time_traj.timestep isa Symbol
+
+    # fixed time
+    @test fixed_time_traj[1] isa KnotPoint
+    @test fixed_time_traj[1].x == fixed_time_traj.x[:, 1]
+    @test fixed_time_traj[end] isa KnotPoint
+    @test fixed_time_traj[end].x == fixed_time_traj.x[:, end]
+    @test fixed_time_traj[:x] == fixed_time_traj.x
+    @test fixed_time_traj.timestep isa Float64
+
+
+
+    # ---------------------------------------------------------
+    # algebraic methods
+    # ---------------------------------------------------------
+
+    free_time_traj2 = copy(free_time_traj)
+    fixed_time_traj2 = copy(fixed_time_traj)
+
+    @test (free_time_traj + free_time_traj2).x == free_time_traj.x + free_time_traj2.x
+    @test (fixed_time_traj + fixed_time_traj2).x == fixed_time_traj.x + fixed_time_traj2.x
+
+    @test (free_time_traj - free_time_traj2).x == free_time_traj.x - free_time_traj2.x
+    @test (fixed_time_traj - fixed_time_traj2).x == fixed_time_traj.x - fixed_time_traj2.x
+
+    @test (2.0 * free_time_traj).x == (free_time_traj * 2.0).x == free_time_traj.x * 2.0
+    @test (2.0 * fixed_time_traj).x == (fixed_time_traj * 2.0).x == fixed_time_traj.x * 2.0
+
+
+
 end

@@ -15,13 +15,4 @@ struct KnotPoint
     control_names::Tuple{Vararg{Symbol}}
 end
 
-function KnotPoint(
-    Z::NamedTrajectory,
-    t::Int
-)
-    @assert 1 ≤ t ≤ Z.T
-    timestep = timesteps(Z)[t]
-    return KnotPoint(t, data, timestep, Z.components, Z.names, Z.control_names)
-end
-
 end
