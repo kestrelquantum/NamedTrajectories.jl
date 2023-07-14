@@ -14,6 +14,19 @@ using ..StructNamedTrajectory
 using ..StructKnotPoint
 
 
+function StructKnotPoint.KnotPoint(
+    Z::NamedTrajectory,
+    t::Int
+)
+    @assert 1 ≤ t ≤ Z.T
+    timestep = timesteps(Z)[t]
+    return KnotPoint(t, Z.data[:, t], timestep, Z.components, Z.names, Z.control_names)
+end
+
+
+
+
+
 """
     copy(::NamedTrajectory)
 
@@ -284,14 +297,14 @@ function Base.:*(traj::NamedTrajectory, α::Float64)
 end
 
 function Base.:+(traj1::NamedTrajectory, traj2::NamedTrajectory)
-    @assert sort([traj1.names...]) == sort([traj2.names...])
+    @assert traj1.names == traj2.names
     @assert traj1.dim == traj2.dim
     @assert traj1.T == traj2.T
     return NamedTrajectory(traj1.datavec + traj2.datavec, traj1)
 end
 
 function Base.:-(traj1::NamedTrajectory, traj2::NamedTrajectory)
-    @assert sort([traj1.names...]) == sort([traj2.names...])
+    @assert traj1.names == traj2.names
     @assert traj1.dim == traj2.dim
     @assert traj1.T == traj2.T
     return NamedTrajectory(traj1.datavec - traj2.datavec, traj1)
