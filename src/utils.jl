@@ -22,7 +22,7 @@ end
 
 function derivative(X::AbstractMatrix, Δt::AbstractVecOrMat)
     if Δt isa AbstractMatrix
-        @assert size(X, 1) == 1 "X must be a row vector if Δt is a matrix"
+        @assert size(Δt, 1) == 1 "X must be a row vector if Δt is a matrix"
         Δt = Δt[1, :]
     end
     @assert size(X, 2) == length(Δt) "number of columns of X ($(size(X, 2))) must equal length of Δt ($(length(Δt))"
