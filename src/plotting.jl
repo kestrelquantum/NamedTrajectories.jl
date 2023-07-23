@@ -5,6 +5,8 @@ export plot
 using CairoMakie
 using LaTeXStrings
 
+import CairoMakie: plot
+
 using ..StructNamedTrajectory
 using ..StructKnotPoint
 using ..MethodsNamedTrajectory
