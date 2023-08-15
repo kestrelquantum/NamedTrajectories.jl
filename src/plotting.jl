@@ -71,9 +71,8 @@ function plot(
                 # create axis for transformed data
                 ax = Axis(
                     fig[ax_count + 1, 1];
-                    title=
-                    isnothing(transformation_titles)
-                    ? latexstring(key, "(t)", "\\text{ transformation } $j") : transformation_titles[key][j],
+
+                    title= isnothing(transformation_titles) ? latexstring(key, "(t)", "\\text{ transformation } $j") : transformation_titles[key][j],
                     titlesize=titlesize,
                     xlabel=L"t"
                 )
@@ -121,17 +120,27 @@ function plot(
             )
 
             # plot transformed data
-            series!(
-                ax,
-                ts,
-                transformed_data;
-                color=series_color,
-                markersize=markersize,
-                labels=isnothing(transformation_labels)
-                ? [latexstring(key, "_{$i}") for i = 1:size(transformed_data, 2)] : transformation_labels[key]
-            )
+            if include_transformation_labels
+                series!(
+                    ax,
+                    ts,
+                    transformed_data;
+                    color=series_color,
+                    markersize=markersize,
+                    labels=isnothing(transformation_labels) ? [latexstring(key, "_{$i}") for i = 1:size(transformed_data, 2)] : transformation_labels[key]
+                )
+                # create legend
+                Legend(fig[ax_count + 1, 2], ax)
+            else
+                series!(
+                    ax,
+                    ts,
+                    transformed_data;
+                    color=series_color,
+                    markersize=markersize
+                )
+            end
 
-            Legend(fig[ax_count + 1, 2], ax)
             # increment axis count
             ax_count += 1
         end
