@@ -19,7 +19,10 @@ function plot(
     # data keyword arguments
     transformations::Dict{Symbol, <:Union{Function, Vector{Function}}} =
         Dict{Symbol, Union{Function, Vector{Function}}}(),
-
+    transformation_labels::Union{Nothing, Dict{Symbol, <:Union{String, Vector{String}}}} =
+        nothing,
+    transformation_titles::Union{Nothing, Dict{Symbol, <:Union{String, Vector{String}}}} =
+        nothing,
     # style keyword arguments
     res::Tuple{Int, Int}=(1200, 800),
     titlesize::Int=25,
@@ -55,7 +58,7 @@ function plot(
         if f isa Vector
             for (j, fⱼ) in enumerate(f)
 
-                # data matrix for key componenent of trajectory
+                # data matrix for key component of trajectory
                 data = traj[key]
 
                 # apply transformation fⱼ to each column of data
@@ -64,7 +67,9 @@ function plot(
                 # create axis for transformed data
                 ax = Axis(
                     fig[ax_count + 1, 1];
-                    title=latexstring(key, "(t)", "\\text{ transformation } $j"),
+                    title= 
+                    isnothing(transformation_titles) 
+                    ? latexstring(key, "(t)", "\\text{ transformation } $j") : transformation_titles[key][j],
                     titlesize=titlesize,
                     xlabel=L"t"
                 )
@@ -76,7 +81,9 @@ function plot(
                     transformed_data;
                     color=series_color,
                     markersize=5,
-                    labels=[latexstring(key, "_{$i}") for i = 1:size(transformed_data, 2)]
+                    labels = 
+                    isnothing(transformation_labels) 
+                    ? [latexstring(key, "_{$i}") for i = 1:size(transformed_data, 2)] : transformation_labels[key][j]
                 )
 
                 # create legend
@@ -96,7 +103,8 @@ function plot(
             # create axis for transformed data
             ax = Axis(
                 fig[ax_count + 1, :];
-                title=latexstring(key, "(t)", "\\text{ transformation }"),
+                title = isnothing(transformation_titles) 
+                ? latexstring(key, "(t)", "\\text{ transformation } $j") : transformation_titles[key],
                 titlesize=titlesize,
                 xlabel=L"t"
             )
@@ -107,9 +115,12 @@ function plot(
                 ts,
                 transformed_data;
                 color=series_color,
-                markersize=5
+                markersize=5,
+                labels=isnothing(transformation_labels) 
+                ? [latexstring(key, "_{$i}") for i = 1:size(transformed_data, 2)] : transformation_labels[key]
             )
-
+            
+            Legend(fig[ax_count + 1, 2], ax)
             # increment axis count
             ax_count += 1
         end
