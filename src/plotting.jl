@@ -4,6 +4,7 @@ export plot
 
 using CairoMakie
 using LaTeXStrings
+using OrderedCollections
 
 import CairoMakie: plot
 
@@ -17,12 +18,12 @@ function plot(
     comps::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}} = traj.names;
 
     # data keyword arguments
-    transformations::Dict{Symbol, <:Union{Function, Vector}} =
-        Dict{Symbol, Union{Function, Vector{Function}}}(),
-    transformation_labels::Union{Nothing, Dict{Symbol, <:Union{String, Vector{String}}}} =
+    transformations::OrderedDict{Symbol, <:Union{Function, Vector}} =
+        OrderedDict{Symbol, Union{Function, Vector{Function}}}(),
+    transformation_labels::Union{Nothing, OrderedDict{Symbol, <:Union{String, Vector{String}}}} =
         nothing,
-    include_transformation_labels=false,
-    transformation_titles::Union{Nothing, Dict{Symbol, <:Union{String, Vector{String}}}} =
+    include_transformation_labels::Union{Bool, Vector{<:Union{Bool, Vector{Bool}}}}=false,
+    transformation_titles::Union{Nothing, OrderedDict{Symbol, <:Union{String, Vector{String}}}} =
         nothing,
     # style keyword arguments
     res::Tuple{Int, Int}=(1200, 800),
@@ -38,6 +39,22 @@ function plot(
         comps = [comps]
     end
 
+    if include_transformation_labels isa Bool
+        include_transformation_labels = fill(include_transformation_labels, length(transformations))
+    else
+        @assert length(include_transformation_labels) == length(transformations)
+        for (i, (b, f)) ∈ enumerate(zip(include_transformation_labels, values(transformations)))
+            if f isa Function
+                @assert b isa Bool
+            else
+                if b isa Bool
+                    include_transformation_labels[i] = fill(b, length(f))
+                else
+                    @assert length(b) == length(f)
+                end
+            end
+        end
+    end
     # convert single symbol to iterable: ignored labels
     if ignored_labels isa Symbol
         ignored_labels = Symbol[ignored_labels]
@@ -57,7 +74,8 @@ function plot(
     ax_count = 0
 
     # plot transformed components
-    for (key, f) in transformations
+    for ((key, f), include_transformation_labels_k) ∈ zip(transformations, include_transformation_labels)
+
         if f isa Vector
             @assert all([fⱼ isa Function for fⱼ in f])
             for (j, fⱼ) in enumerate(f)
@@ -78,7 +96,7 @@ function plot(
                 )
 
                 # plot transformed data
-                if include_transformation_labels
+                if include_transformation_labels_k[j]
                     series!(
                         ax,
                         ts,
@@ -120,7 +138,7 @@ function plot(
             )
 
             # plot transformed data
-            if include_transformation_labels
+            if include_transformation_labels_k
                 series!(
                     ax,
                     ts,

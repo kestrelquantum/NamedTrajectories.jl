@@ -2,6 +2,8 @@ module NamedTrajectories
 
 using Reexport
 
+@reexport using OrderedCollections
+
 include("struct_named_trajectory.jl")
 @reexport using .StructNamedTrajectory
 
