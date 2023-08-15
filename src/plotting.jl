@@ -17,7 +17,7 @@ function plot(
     comps::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}} = traj.names;
 
     # data keyword arguments
-    transformations::Dict{Symbol, <:Union{Function, Vector{Function}}} =
+    transformations::Dict{Symbol, <:Union{Function, Vector}} =
         Dict{Symbol, Union{Function, Vector{Function}}}(),
 
     # style keyword arguments
@@ -25,7 +25,10 @@ function plot(
     titlesize::Int=25,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
     ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}}=(),
-    ignore_timestep::Bool=true
+    ignore_timestep::Bool=true,
+    transformation_labels=false,
+    markersize=5,
+    kwargs...
 )
     # convert single symbol to vector: comps
     if comps isa Symbol
@@ -53,6 +56,7 @@ function plot(
     # plot transformed components
     for (key, f) in transformations
         if f isa Vector
+            @assert all([fⱼ isa Function for fⱼ in f])
             for (j, fⱼ) in enumerate(f)
 
                 # data matrix for key componenent of trajectory
@@ -70,17 +74,27 @@ function plot(
                 )
 
                 # plot transformed data
-                series!(
-                    ax,
-                    ts,
-                    transformed_data;
-                    color=series_color,
-                    markersize=5,
-                    labels=[latexstring(key, "_{$i}") for i = 1:size(transformed_data, 2)]
-                )
+                if transformation_labels
+                    series!(
+                        ax,
+                        ts,
+                        transformed_data;
+                        color=series_color,
+                        markersize=markersize,
+                        labels=[latexstring(key, "_{$i}") for i = 1:size(transformed_data, 2)]
+                    )
+                    Legend(fig[ax_count + 1, 2], ax)
+                else
+                    series!(
+                        ax,
+                        ts,
+                        transformed_data;
+                        color=series_color,
+                        markersize=markersize
+                    )
+                end
 
                 # create legend
-                Legend(fig[ax_count + 1, 2], ax)
 
                 # increment axis count
                 ax_count += 1
@@ -107,7 +121,7 @@ function plot(
                 ts,
                 transformed_data;
                 color=series_color,
-                markersize=5
+                markersize=markersize
             )
 
             # increment axis count
@@ -146,7 +160,7 @@ function plot(
             ts,
             data;
             color=series_color,
-            markersize=5,
+            markersize=markersize,
             labels=labels
         )
 
