@@ -132,7 +132,7 @@ function plot(
             ax = Axis(
                 fig[ax_count + 1, :];
                 title = isnothing(transformation_titles)
-                ? latexstring(key, "(t)", "\\text{ transformation } $j") : transformation_titles[key],
+                ? latexstring(key, "(t)", "\\text{ transformation}") : transformation_titles[key],
                 titlesize=titlesize,
                 xlabel=L"t"
             )
