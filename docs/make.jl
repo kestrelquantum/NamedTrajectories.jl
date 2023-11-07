@@ -38,5 +38,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/aarontrowbridge/NamedTrajectories.jl.git",
-    devbranch="dev-aaron",
+    devbranch="main",
 )
