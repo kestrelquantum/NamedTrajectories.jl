@@ -1,23 +1,24 @@
 # NamedTrajectories.jl
 
+<img src="assets/piccolo_logo_no_name.svg" alt="logo" width="35%"/>
+
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://aarontrowbridge.github.io/NamedTrajectories.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://aarontrowbridge.github.io/NamedTrajectories.jl/dev/)
 [![Build Status](https://github.com/aarontrowbridge/NamedTrajectories.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/aarontrowbridge/NamedTrajectories.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl)
 
-**NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with [QuantumCollocation.jl](https://github.com/aarontrowbridge/QuantumCollocation.jl).
+**NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with [QuantumCollocation.jl](https://github.com/aarontrowbridge/QuantumCollocation.jl) and [Piccolo.jl](https://github.com/aarontrowbridge/Piccolo.jl).
 
-## Notice!
+## :warning: Notice :warning:
 
-This package is under active development and issues may arise -- please be patient and report any issues you find!
+This package is under active development and issues may arise -- please be patient and report any issues you find!  Documentation is coming soon!
 
 ## Installation
 
-NamedTrajectories.jl is now registered! Install with
+NamedTrajectories.jl is now registered! Install in the REPL by entering pkg mode with `]` and then running 
 
 ```julia
-using Pkg
-Pkg.add(NamedTrajectories)
+pkg> add NamedTrajectories
 ```
 
 
