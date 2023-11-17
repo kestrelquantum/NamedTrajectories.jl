@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Quickstart Guide · NamedTrajectories.jl</title><meta name="title" content="Quickstart Guide · NamedTrajectories.jl"/><meta property="og:title" content="Quickstart Guide · NamedTrajectories.jl"/><meta property="twitter:title" content="Quickstart Guide · NamedTrajectories.jl"/><meta name="description" content="Documentation for NamedTrajectories.jl."/><meta property="og:description" content="Documentation for NamedTrajectories.jl."/><meta property="twitter:description" content="Documentation for NamedTrajectories.jl."/><meta property="og:url" content="https://aarontrowbridge.github.io/NamedTrajectories.jl/man/quickstart/"/><meta property="twitter:url" content="https://aarontrowbridge.github.io/NamedTrajectories.jl/man/quickstart/"/><link rel="canonical" href="https://aarontrowbridge.github.io/NamedTrajectories.jl/man/quickstart/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="NamedTrajectories.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">NamedTrajectories.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li class="is-active"><a class="tocitem" href>Quickstart Guide</a><ul class="internal"><li><a class="tocitem" href="#Creating-a-fixed-timestep-NamedTrajectory"><span>Creating a fixed-timestep <code>NamedTrajectory</code></span></a></li><li><a class="tocitem" href="#Creating-a-variable-timestep-NamedTrajectory"><span>Creating a variable-timestep <code>NamedTrajectory</code></span></a></li><li><a class="tocitem" href="#Adding-more-problem-data"><span>Adding more problem data</span></a></li></ul></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../tips/">Tips and Tricks</a></li><li><a class="tocitem" href="../../lib/">Library</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Quickstart Guide</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Quickstart Guide</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/aarontrowbridge/NamedTrajectories.jl/blob/main/docs/literate/man/quickstart.jl#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Quickstart-Guide"><a class="docs-heading-anchor" href="#Quickstart-Guide">Quickstart Guide</a><a id="Quickstart-Guide-1"></a><a class="docs-heading-anchor-permalink" href="#Quickstart-Guide" title="Permalink"></a></h1><p>To begin let&#39;s load the package</p><pre><code class="language-julia hljs">using NamedTrajectories</code></pre><p>A trajectory is a collection of named vectors, each of which has the same length. Mathematically we have a collection of vectors</p><p class="math-container">\[\qty{z_t = \mqty(x_t \\ u_t)}_{t=1:T}\]</p><p>where <span>$x_t$</span> is the state and <span>$u_t$</span> is the control at a time indexed by <span>$t$</span>. Together <span>$z_t$</span> is referred to as a <em>knot point</em> and a <code>NamedTrajectory</code> essentially just stores a collection of knot points and makes it easy to access the state and control variables.</p><h2 id="Creating-a-fixed-timestep-NamedTrajectory"><a class="docs-heading-anchor" href="#Creating-a-fixed-timestep-NamedTrajectory">Creating a fixed-timestep <code>NamedTrajectory</code></a><a id="Creating-a-fixed-timestep-NamedTrajectory-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-a-fixed-timestep-NamedTrajectory" title="Permalink"></a></h2><p>Here we will createa a <code>NamedTrajectory</code> with a fixed timestep. This is done by passing a scalar as the <code>timestep</code> kwarg.</p><pre><code class="language-julia hljs"># define the number of timesteps
+T = 10
+
+# define the knot point data as a NamedTuple of matrices
+data = (
+    x = rand(3, T),
+    u = rand(2, T),
+)
+
+# we must specify a timestep and control variable for the trajectory
+timestep = 0.1
+control = :u
+
+# we can now create a `NamedTrajectory` object
+traj = NamedTrajectory(data; timestep=timestep, controls=control)
+
+# we can return the names of the stored variables
+traj.names</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(:x, :u)</code></pre><p>Let&#39;s plot this trajectory</p><pre><code class="language-julia hljs">plot(traj)</code></pre><img src="11a64a12.png" alt="Example block output"/><h2 id="Creating-a-variable-timestep-NamedTrajectory"><a class="docs-heading-anchor" href="#Creating-a-variable-timestep-NamedTrajectory">Creating a variable-timestep <code>NamedTrajectory</code></a><a id="Creating-a-variable-timestep-NamedTrajectory-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-a-variable-timestep-NamedTrajectory" title="Permalink"></a></h2><p>Here we will create a <code>NamedTrajectory</code> with a variable timestep. This is done by passing a <code>Symbol</code>, corresponding to component of the data, as the <code>timestep</code> kwarg.</p><pre><code class="language-julia hljs"># define the number of timesteps
+T = 10
+
+# define the knot point data as a NamedTuple of matrices
+data = (
+    x = rand(3, T),
+    u = rand(2, T),
+    Δt = rand(T),
+)
+
+# we must specify a timestep and control variable for the NamedTrajectory
+timestep = :Δt
+control = :u
+
+# we can now create a `NamedTrajectory` object
+traj = NamedTrajectory(data; timestep=timestep, controls=control)
+
+# we can return the names of the stored variables
+traj.names</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(:x, :u, :Δt)</code></pre><h2 id="Adding-more-problem-data"><a class="docs-heading-anchor" href="#Adding-more-problem-data">Adding more problem data</a><a id="Adding-more-problem-data-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-more-problem-data" title="Permalink"></a></h2><p>In many settings we will want to add problem data to our <code>NamedTrajectory</code> – e.g. bounds, initial values, final values, and goal values. This is realized by passing NamedTuples containing this data.</p><pre><code class="language-julia hljs"># define the number of timesteps
+T = 10
+
+# define the knot point data as a NamedTuple of matrices
+data = (
+    x = rand(3, T),
+    u = rand(2, T),
+    Δt = rand(T),
+)
+
+# define initial values
+initial = (
+    x = [1.0, 0.0, 0.0],
+    u = [0.0, 0.0],
+)
+
+# define final value, here just on the control
+final = (
+    u = [0.0, 0.0],
+)
+
+# define bounds
+bounds = (
+    x = 1.0,
+    u = 1.0
+)
+
+# set a goal for the state
+goal = (
+    x = [0.0, 0.0, 1.0],
+)
+
+# we must specify a timestep and control variable for the NamedTrajectory
+timestep = :Δt
+control = :u
+
+# we can now create a `NamedTrajectory` object
+traj = NamedTrajectory(
+    data;
+    timestep=timestep,
+    controls=control,
+    initial=initial,
+    final=final,
+    bounds=bounds,
+    goal=goal
+)
+
+# we can then show the bounds
+traj.goal</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(x = [0.0, 0.0, 1.0],)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.2 on <span class="colophon-date" title="Friday 17 November 2023 22:27">Friday 17 November 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
