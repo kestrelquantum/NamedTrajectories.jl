@@ -1,6 +1,7 @@
 module StructNamedTrajectory
 
 export NamedTrajectory
+export BoundType
 
 using DataStructures
 
@@ -48,18 +49,28 @@ function NamedTrajectory(
     @assert all([k ∈ keys(comp_data) for k ∈ keys(goal)])
 
     @assert all([k ∈ keys(comp_data) for k ∈ keys(bounds)])
+
     @assert all([
+        bound isa Real ||
         bound isa AbstractVector{<:Real} ||
-        bound isa BoundType ||
-        bound isa Tuple{<:Real,<:Real}
+        bound isa Tuple{<:Real,<:Real} ||
+        bound isa BoundType
             for bound ∈ bounds
     ])
+
     if timestep isa Symbol && !in(timestep, controls)
         controls = (controls..., timestep)
     end
+
     bounds_dict = OrderedDict{Symbol,Any}(pairs(bounds))
+
     for (name, bound) ∈ bounds_dict
-        if bound isa AbstractVector
+        if bound isa Real
+            bounds_dict[name] = (
+                -fill(bound, size(comp_data[name], 1)),
+                fill(bound, size(comp_data[name], 1))
+            )
+        elseif bound isa AbstractVector
             bounds_dict[name] = (-bound, bound)
         elseif bound isa Tuple{<:Real, <:Real}
             bounds_dict[name] = ([bound[1]], [bound[2]])
@@ -190,7 +201,9 @@ function NamedTrajectory(
 
     @assert all([k ∈ keys(components) for k ∈ keys(bounds)])
     @assert all([
+        (bound isa Real) ||
         (bound isa AbstractVector{<:Real}) ||
+        (bound isa Tuple{<:Real,<:Real}) ||
         (bound isa BoundType)
         for bound ∈ bounds
     ])

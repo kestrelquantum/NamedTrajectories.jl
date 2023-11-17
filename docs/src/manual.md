@@ -1,20 +1,35 @@
 # Manual
 
-## Installation
+To begin with install the package using the package manager
 
 ```julia
-pkg> add NamedTrajectories
+] add NamedTrajectories
 ```
 
-## Usage
+Then load the package
 
 ```julia
 using NamedTrajectories
 ```
 
-### Creating a trajectory
+## Creating a trajectory
 
-A trajectory is a collection of named vectors, each of which has the same length. The vectors can be of any type, but must be named. The names are used to identify the vectors, and must be unique.
+A trajectory is a collection of named vectors, each of which has the same length. Mathematically we have a collection of vectors
+
+```math
+\qty{z_t = \qty(x_t \\ u_t)}_{t=1:T}
+```
+
+The vectors can be of any type, but must be named. The names are used to identify the vectors, and must be unique.
 
 ```julia
-data =  
+data = (
+
+) 
+```
+
+
+## Retrieving values 
+
+
+## Plotting

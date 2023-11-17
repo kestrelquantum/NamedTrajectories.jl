@@ -1,6 +1,6 @@
 # NamedTrajectories.jl
 
-[<img src="src/assets/logo.svg" alt="logo" width="35%"/>](https://github.com/aarontrowbridge/Piccolo.jl)
+[<img src="assets/logo.svg" alt="logo" width="35%"/>](https://github.com/aarontrowbridge/Piccolo.jl)
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://aarontrowbridge.github.io/NamedTrajectories.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://aarontrowbridge.github.io/NamedTrajectories.jl/dev/)

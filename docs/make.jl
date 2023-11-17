@@ -1,9 +1,25 @@
 using NamedTrajectories
 using Documenter
+using Literate
 
 push!(LOAD_PATH, joinpath(@__DIR__, "..", "src"))
 
-DocMeta.setdocmeta!(NamedTrajectories, :DocTestSetup, :(using NamedTrajectories); recursive=true)
+# DocMeta.setdocmeta!(
+#     NamedTrajectories,
+#     :DocTestSetup,
+#     :(using NamedTrajectories);
+#     recursive=true
+# )
+
+src = joinpath(@__DIR__, "src")
+lit = joinpath(@__DIR__, "literate")
+
+for (root, _, files) ∈ walkdir(lit), file ∈ files
+    splitext(file)[2] == ".jl" || continue
+    ipath = joinpath(root, file)
+    opath = splitdir(replace(ipath, lit=>src))[1]
+    Literate.markdown(ipath, opath)
+end
 
 makedocs(;
     modules=[NamedTrajectories],
@@ -30,9 +46,11 @@ makedocs(;
         )),
     ),
     pages=[
-        "Introduction" => "index.md",
-        "Manual" => "manual.md",
-        "API" => "api.md",
+        "Home" => "index.md",
+        "Quickstart Guide" => "man/quickstart.md",
+        "Plotting" => "man/plotting.md",
+        "Tips and Tricks" => "man/tips.md",
+        "Library" => "lib.md"
     ],
 )
 
