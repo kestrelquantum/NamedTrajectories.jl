@@ -54,9 +54,17 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "Quickstart Guide" => "man/quickstart.md",
-        "Manual" => "man/manual.md",
-        "Plotting" => "man/plotting.md",
+        "Quickstart Guide" => "quickstart.md",
+        # "Manual" => [
+        #     "man/constructors.md",
+        #     "man/retrieval.md",
+        #     "man/add_remove.md",
+        #     "man/updating.md",
+        #     "man/times.md",
+        #     "man/operations.md",
+        #     "man/copying.md",
+        # ],
+        "Plotting" => "plotting.md",
         "Library" => "lib.md"
     ],
 )

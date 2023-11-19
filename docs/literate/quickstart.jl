@@ -134,3 +134,54 @@ traj.goal
 
 
 # ## Retrieving data
+
+# There are a number of ways to access data, for example
+
+traj.x
+
+# returns the data matrix associated with the state variable `x`.
+
+traj.data
+
+# returns the all of the data as a matrix where each column is a knot point.
+
+traj.datavec
+
+# returns the all of the data as a view of the data matrix as a vector -- useful for passing data to solvers.
+
+traj[1]
+
+# returns a `KnotPoint`.
+
+traj[1].x
+
+# returns the state at the first knot point.
+
+times(traj)
+
+# returns the times of the knot points.
+
+timesteps(traj)
+
+# returns the timesteps of the knot points, as vector.
+
+
+# ## Retrieving metadata
+
+# We can also retrieve metadata about the trajectory, for example
+
+traj.names
+
+# returns the names of the variables stored in the trajectory.
+
+traj.dims
+
+# returns the dimensions of the variables stored in the trajectory.
+
+traj.T
+
+# returns the number of knot points in the trajectory.
+
+traj.components
+
+# returns the components of the trajectory.

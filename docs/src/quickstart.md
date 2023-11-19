@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "../../literate/man/quickstart.jl"
+EditURL = "../literate/quickstart.jl"
 ```
 
 # Quickstart Guide
@@ -140,6 +140,78 @@ traj.goal
 ````
 
 ## Retrieving data
+
+There are a number of ways to access data, for example
+
+````@example quickstart
+traj.x
+````
+
+returns the data matrix associated with the state variable `x`.
+
+````@example quickstart
+traj.data
+````
+
+returns the all of the data as a matrix where each column is a knot point.
+
+````@example quickstart
+traj.datavec
+````
+
+returns the all of the data as a view of the data matrix as a vector -- useful for passing data to solvers.
+
+````@example quickstart
+traj[1]
+````
+
+returns a `KnotPoint`.
+
+````@example quickstart
+traj[1].x
+````
+
+returns the state at the first knot point.
+
+````@example quickstart
+times(traj)
+````
+
+returns the times of the knot points.
+
+````@example quickstart
+timesteps(traj)
+````
+
+returns the timesteps of the knot points, as vector.
+
+## Retrieving metadata
+
+We can also retrieve metadata about the trajectory, for example
+
+````@example quickstart
+traj.names
+````
+
+returns the names of the variables stored in the trajectory.
+
+````@example quickstart
+traj.dims
+````
+
+returns the dimensions of the variables stored in the trajectory.
+
+````@example quickstart
+traj.T
+````
+
+returns the number of knot points in the trajectory.
+
+````@example quickstart
+traj.components
+````
+
+returns the components of the trajectory.
 
 ---
 

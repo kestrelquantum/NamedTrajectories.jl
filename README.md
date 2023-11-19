@@ -25,7 +25,7 @@ pkg> add NamedTrajectories
 ```
 
 
-## Usage
+## Basic Usage
 
 Users can define `NamedTrajectory` types which have lots of useful functionality. For example, you can access the data by name or index.  In the case of an index, a `KnotPoint` is returned which contains the data for that timestep.
 

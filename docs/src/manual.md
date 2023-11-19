@@ -1,35 +1,24 @@
+```@meta
+EditURL = "../literate/manual.jl"
+```
+
 # Manual
 
-To begin with install the package using the package manager
+## Constructors
 
-```julia
-] add NamedTrajectories
-```
+## Retrieving data
 
-Then load the package
+## Adding and removing variables
 
-```julia
-using NamedTrajectories
-```
+## Updating data and bounds
 
-## Creating a trajectory
+## Getting times and timesteps
 
-A trajectory is a collection of named vectors, each of which has the same length. Mathematically we have a collection of vectors
+## Operations with other trajectories
 
-```math
-\qty{z_t = \qty(x_t \\ u_t)}_{t=1:T}
-```
+## Copying and equality
 
-The vectors can be of any type, but must be named. The names are used to identify the vectors, and must be unique.
+---
 
-```julia
-data = (
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 
-) 
-```
-
-
-## Retrieving values 
-
-
-## Plotting

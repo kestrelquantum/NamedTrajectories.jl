@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "../../literate/man/plotting.jl"
+EditURL = "../literate/plotting.jl"
 ```
 
 # Plotting
