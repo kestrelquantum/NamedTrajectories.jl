@@ -1,10 +1,8 @@
 # NamedTrajectories.jl
 
-<div align="center">
-<a href="https://github.com/aarontrowbridge/Piccolo.jl">
-<img src="assets/logo.svg" alt="logo" width="35%"/>
-</a>
-</div>
+<div align="center"> <a href="https://github.com/aarontrowbridge/Piccolo.jl">
+    <img src="assets/logo.svg" alt="logo" width="35%"/>
+</a> </div>
 
 <div align="center">
 
@@ -86,3 +84,4 @@ This script generates the following plot as demonstrated in [demo.ipynb](example
   - [ ] Handling of data as views
   - [ ] KnotPoint as view
   - [ ] More efficient copying and constructing
+- [ ] Docstrings for all functions
