@@ -67,8 +67,8 @@ traj.names # returns names as tuple (:x, :u)
 plot(traj)
 ```
 
-This script generates the following plot as demonstrated in [demo.ipynb](examples/notebooks/demo.ipynb)
-![](examples/notebooks/demo.png)
+This script generates the following plot as demonstrated in [demo.ipynb](examples/demo.ipynb)
+![](examples/demo.png)
 
 
 ## TODO
