@@ -1,10 +1,20 @@
 # # Quickstart Guide
 
-# To begin let's load the package
+# ## Getting set up
+
+# To install `NamedTrajectories` simply enter the package manager in the Julia REPL with `]` and run
+
+#=
+```julia
+pkg> add NamedTrajectories
+```
+=#
+
+# Then just use the package as usual with
 
 using NamedTrajectories
 
-# A trajectory is a collection of named vectors, each of which has the same length. Mathematically we have a collection of vectors
+# For the following examples let's work with a simple trajectory
 
 #=
 ```math
@@ -121,3 +131,6 @@ traj = NamedTrajectory(
 
 ## we can then show the bounds
 traj.goal
+
+
+# ## Retrieving data

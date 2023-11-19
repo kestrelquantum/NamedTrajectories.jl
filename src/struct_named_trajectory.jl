@@ -3,7 +3,7 @@ module StructNamedTrajectory
 export NamedTrajectory
 export BoundType
 
-using DataStructures
+using OrderedCollections
 
 
 const BoundType = Tuple{AbstractVector{<:Real}, AbstractVector{<:Real}}

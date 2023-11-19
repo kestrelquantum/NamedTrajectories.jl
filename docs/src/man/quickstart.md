@@ -4,13 +4,21 @@ EditURL = "../../literate/man/quickstart.jl"
 
 # Quickstart Guide
 
-To begin let's load the package
+## Getting set up
+
+To install `NamedTrajectories` simply enter the package manager in the Julia REPL with `]` and run
+
+```julia
+pkg> add NamedTrajectories
+```
+
+Then just use the package as usual with
 
 ````@example quickstart
 using NamedTrajectories
 ````
 
-A trajectory is a collection of named vectors, each of which has the same length. Mathematically we have a collection of vectors
+For the following examples let's work with a simple trajectory
 
 ```math
 \qty{z_t = \mqty(x_t \\ u_t)}_{t=1:T}
@@ -130,6 +138,8 @@ traj = NamedTrajectory(
 # we can then show the bounds
 traj.goal
 ````
+
+## Retrieving data
 
 ---
 

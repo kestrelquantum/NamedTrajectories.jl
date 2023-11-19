@@ -9,8 +9,7 @@ export update_bound!
 export times
 export timesteps
 
-using DataStructures
-
+using OrderedCollections
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint

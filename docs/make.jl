@@ -41,14 +41,22 @@ makedocs(;
                     "autoload",
                     "physics"
                 ],
+                "macros" => Dict(
+                    "minimize" => ["\\underset{#1}{\\operatorname{minimize}}", 1],
+                )
             ),
+            # :TeX => Dict(
+            #     :Macros => Dict(
+            #         :minimize => ["\\underset{#1}{\\operatorname{minimize}}", 1],
+            #     )
+            # )
         )),
     ),
     pages=[
         "Home" => "index.md",
         "Quickstart Guide" => "man/quickstart.md",
+        "Manual" => "man/manual.md",
         "Plotting" => "man/plotting.md",
-        "Tips and Tricks" => "man/tips.md",
         "Library" => "lib.md"
     ],
 )

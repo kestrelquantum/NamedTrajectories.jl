@@ -2,7 +2,9 @@ module NamedTrajectories
 
 using Reexport
 
-@reexport using OrderedCollections
+@reexport using LaTeXStrings
+
+@reexport using OrderedCollections: OrderedDict
 
 include("struct_named_trajectory.jl")
 @reexport using .StructNamedTrajectory
