@@ -1,7 +1,9 @@
 # NamedTrajectories.jl
 
 <div align="center">
-<img src="assets/logo.svg" alt="logo" width="35%" href="https://github.com/aarontrowbridge/Piccolo.jl"/>
+<a href="https://github.com/aarontrowbridge/Piccolo.jl">
+<img src="assets/logo.svg" alt="logo" width="35%"/>
+</a>
 </div>
 
 <div align="center">
