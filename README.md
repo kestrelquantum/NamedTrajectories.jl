@@ -14,7 +14,7 @@
 
 **NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with [QuantumCollocation.jl](https://github.com/aarontrowbridge/QuantumCollocation.jl) and [Piccolo.jl](https://github.com/aarontrowbridge/Piccolo.jl).
 
-Please see the [documentation](https://aarontrowbridge.github.io/NamedTrajectories.jl/stable/) for more information.
+Please see the `dev` [documentation](https://aarontrowbridge.github.io/NamedTrajectories.jl/dev/) for more information.
 
 ## Installation
 
