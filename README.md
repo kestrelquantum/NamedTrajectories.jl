@@ -16,9 +16,7 @@
 
 **NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with [QuantumCollocation.jl](https://github.com/aarontrowbridge/QuantumCollocation.jl) and [Piccolo.jl](https://github.com/aarontrowbridge/Piccolo.jl).
 
-## :warning: Notice :warning:
-
-This package is under active development and issues may arise -- please be patient and report any issues you find!  Documentation is coming soon!
+Please see the [documentation](https://aarontrowbridge.github.io/NamedTrajectories.jl/stable/) for more information.
 
 ## Installation
 
@@ -75,9 +73,16 @@ This script generates the following plot as demonstrated in [demo.ipynb](example
 ![](examples/notebooks/demo.png)
 
 
-## Plotting
+## TODO
 
-See plotting function in [plotting.jl](src/plotting.jl) for more details.
-
-Documentation coming soon!
-
+- [ ] Add contributing guidelines for
+  - [ ] documentation
+  - [ ] new features
+  - [ ] testing
+  - [ ] examples
+- [ ] Flesh out manual in documentation, see [docs/literate/man](docs/literate/man) or [docs/literate/manual.jl](docs/literate/manual.jl)
+- [ ] Convert literate files to notebooks for examples
+- [ ] Internal optimizations
+  - [ ] Handling of data as views
+  - [ ] KnotPoint as view
+  - [ ] More efficient copying and constructing
