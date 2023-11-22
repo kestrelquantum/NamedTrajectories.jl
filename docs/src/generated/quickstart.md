@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "../literate/quickstart.jl"
+EditURL = "../../literate/quickstart.jl"
 ```
 
 # Quickstart Guide

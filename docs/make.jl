@@ -13,11 +13,12 @@ push!(LOAD_PATH, joinpath(@__DIR__, "..", "src"))
 
 src = joinpath(@__DIR__, "src")
 lit = joinpath(@__DIR__, "literate")
+lit_output = joinpath(src, "generated")
 
 for (root, _, files) ∈ walkdir(lit), file ∈ files
     splitext(file)[2] == ".jl" || continue
     ipath = joinpath(root, file)
-    opath = splitdir(replace(ipath, lit=>src))[1]
+    opath = splitdir(replace(ipath, lit=>lit_output))[1]
     Literate.markdown(ipath, opath)
 end
 
@@ -54,17 +55,16 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "Quickstart Guide" => "quickstart.md",
+        "Quickstart Guide" => "generated/quickstart.md",
         # "Manual" => [
-        #     "man/constructors.md",
-        #     "man/retrieval.md",
-        #     "man/add_remove.md",
-        #     "man/updating.md",
-        #     "man/times.md",
-        #     "man/operations.md",
-        #     "man/copying.md",
+        #     "generated/man/constructors.md",
+        #     "generated/man/retrieval.md",
+        #     "generated/man/add_remove.md",
+        #     "generated/man/updating.md",
+        #     "generated/man/times.md",
+        #     "generated/man/operations.md",
         # ],
-        "Plotting" => "plotting.md",
+        "Plotting" => "generated/plotting.md",
         "Library" => "lib.md"
     ],
 )

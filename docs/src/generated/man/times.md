@@ -1,8 +1,8 @@
 ```@meta
-EditURL = "../../literate/man/copying.jl"
+EditURL = "../../../literate/man/times.jl"
 ```
 
-# Copying and equality
+# Times and timesteps
 
 ---
 
