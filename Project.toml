@@ -14,7 +14,7 @@ Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Unidecode = "967fb449-e509-55aa-8007-234b4096b967"
 
 [compat]
-CairoMakie = "0.10"
+CairoMakie = "0.10, 0.11"
 JLD2 = "0.4"
 LaTeXStrings = "1.3"
 Latexify = "0.16"
