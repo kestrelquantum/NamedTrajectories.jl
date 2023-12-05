@@ -85,3 +85,5 @@ This script generates the following plot as demonstrated in [demo.ipynb](example
   - [ ] KnotPoint as view
   - [ ] More efficient copying and constructing
 - [ ] Docstrings for all functions
+- [ ] functionality
+  - [ ] random NTs
