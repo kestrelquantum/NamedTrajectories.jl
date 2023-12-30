@@ -1,0 +1,53 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+projects: ["octo-org/1", "octo-org/44"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: Describe the feature you'd like.
+      placeholder: Tell us what you want! (you can use markdown)
+      value: "I want a feature!"
+    validations:
+      required: true 
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Importance
+      description: How important is this feature to you?
+      options:
+        - 1 (lowest)
+        - 2
+        - 3
+        - 4
+        - 5 (highest)
+      default: 0
+    validations:
+      required: true
+  - type: checkboxes
+    id: effects 
+    attributes:
+      label: What does this feature affect? 
+      description: Check all that apply.
+      options:
+        - label: construction
+        - label: methods
+        - label: plotting
+        - label: documentation
+        - label: tests
+        - label: other (please specify below)
+  - type: textarea
+    id: other-info
+    attributes:
+      label: Other information
+      description: Anything else you want to tell us?
+      placeholder: Tell us anything else! Fun thoughts? Crazy ideas? Other context?
