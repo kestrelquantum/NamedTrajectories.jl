@@ -41,7 +41,7 @@ function NamedTrajectory(
     @assert !isempty(controls)
     @assert !isnothing(timestep)
     @assert timestep isa Symbol && timestep ∈ keys(comp_data) ||
-        timestep isa Real
+        timestep isa Real "timestep $(timestep)::$(typeof(timestep)) must be a symbol or real"
 
     @assert all([k ∈ keys(comp_data) for k ∈ controls])
     @assert all([k ∈ keys(comp_data) for k ∈ keys(initial)])

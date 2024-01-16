@@ -183,11 +183,16 @@ end
 
 Remove a component from the trajectory.
 """
-function remove_component(traj::NamedTrajectory, name::Symbol)
+function remove_component(traj::NamedTrajectory, name::Symbol; new_control=nothing)
     @assert name ∈ traj.names
     comps = NamedTuple([
         (key => data) for (key, data) ∈ pairs(components(traj)) if key != name
     ])
+    if name ∈ traj.control_names
+        @assert !isnothing(new_control)
+        traj.control_names = filter!(n -> n != name, traj.control_names)
+        traj.control_names = (traj.control_names..., new_control)
+    end
     return NamedTrajectory(comps, traj)
 end
 
@@ -196,11 +201,24 @@ end
 
 Remove a set of components from the trajectory.
 """
-function remove_components(traj::NamedTrajectory, names::Vector{Symbol})
+function remove_components(
+    traj::NamedTrajectory,
+    names::Vector{Symbol};
+    new_control_names=nothing
+)
     @assert all([name ∈ traj.names for name ∈ names])
     comps = NamedTuple([
         (key => data) for (key, data) ∈ pairs(components(traj)) if !(key ∈ names)
     ])
+    if any([name ∈ traj.control_names for name ∈ names])
+        @assert !isnothing(new_control_names)
+        if new_control_names isa Symbol
+            new_control_names = (new_control_names,)
+        end
+        traj.control_names = Tuple(filter!(n -> n ∉ names, [traj.control_names...]))
+        traj.control_names = (traj.control_names..., new_control_names...)
+    end
+
     return NamedTrajectory(comps, traj)
 end
 
