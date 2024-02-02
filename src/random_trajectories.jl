@@ -9,7 +9,7 @@ using ..StructNamedTrajectory
         timestep_value::Float64=1.0,
         timestep_name::Symbol=:Δt,
         free_time::Bool=false,
-        timestep::Union{Float64,Symbol}=free_time ? timestep_value : timestep_name,
+        timestep::Union{Float64,Symbol}=free_time ? timestep_name : timestep_value,
         state_dim::Int=3,
         control_dim::Int=2
     )
