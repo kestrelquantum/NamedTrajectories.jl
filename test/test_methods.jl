@@ -158,11 +158,11 @@ test: methods_named_trajectories.jl
 
     # case: free time
 
-    @test times(free_time_traj) ≈ [0.0, cumsum(vec(free_time_traj.Δt))[1:end-1]...]
+    @test get_times(free_time_traj) ≈ [0.0, cumsum(vec(free_time_traj.Δt))[1:end-1]...]
 
     # case: fixed time
 
-    @test times(fixed_time_traj) ≈ 0.1 .* [0:T-1...]
+    @test get_times(fixed_time_traj) ≈ 0.1 .* [0:T-1...]
 
 
     # test get size

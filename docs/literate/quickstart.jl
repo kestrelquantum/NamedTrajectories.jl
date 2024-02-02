@@ -157,11 +157,11 @@ traj[1].x
 
 # returns the state at the first knot point.
 
-times(traj)
+get_times(traj)
 
 # returns the times of the knot points.
 
-timesteps(traj)
+get_timesteps(traj)
 
 # returns the timesteps of the knot points, as vector.
 

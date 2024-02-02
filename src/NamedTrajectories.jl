@@ -15,6 +15,9 @@ include("struct_knot_point.jl")
 include("methods_named_trajectory.jl")
 @reexport using .MethodsNamedTrajectory
 
+include("random_trajectories.jl")
+@reexport using .RandomTrajectories
+
 include("methods_knot_point.jl")
 @reexport using .MethodsKnotPoint
 

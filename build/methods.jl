@@ -2,7 +2,7 @@ module Methods
 
 export add_component!
 export update!
-export times
+export get_times
 
 using ..Types
 
@@ -83,7 +83,7 @@ function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float
     traj.datavec = vec(view(traj.data, :, :))
 end
 
-function times(traj::NamedTrajectory, timestep_name::Union{Symbol, Nothing}=nothing)
+function get_times(traj::NamedTrajectory, timestep_name::Union{Symbol, Nothing}=nothing)
     if traj.dynamical_timesteps
         @assert !isnothing(timestep_name)
         return cumsum(vec(traj[timestep_name]))

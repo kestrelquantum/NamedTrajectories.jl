@@ -174,13 +174,13 @@ traj[1].x
 returns the state at the first knot point.
 
 ````@example quickstart
-times(traj)
+get_times(traj)
 ````
 
 returns the times of the knot points.
 
 ````@example quickstart
-timesteps(traj)
+get_timesteps(traj)
 ````
 
 returns the timesteps of the knot points, as vector.

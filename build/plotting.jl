@@ -17,7 +17,7 @@ function plot(
         Dict{Symbol, Union{Function, Vector{Function}}}(),
 
     # style keyword arguments
-    res::Tuple{Int, Int}=(1200, 800),
+    size::Tuple{Int, Int}=(1200, 800),
     titlesize::Int=25,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
     ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}} =
@@ -37,10 +37,10 @@ function plot(
     @assert all([key ∈ keys(traj.components) for key ∈ comps])
     @assert all([key ∈ keys(traj.components) for key ∈ keys(transformations)])
 
-    ts = times(traj, timestep_name)
+    ts = get_times(traj, timestep_name)
 
     # create figure
-    fig = Figure(resolution=res)
+    fig = Figure(size=fig_size)
 
     # initialize axis count
     ax_count = 0

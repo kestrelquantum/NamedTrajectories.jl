@@ -37,7 +37,7 @@ Plot a `NamedTrajectory` using `CairoMakie`.
 - `transformation_titles::Union{Nothing, OrderedDict{Symbol, <:Union{<:AbstractString, Vector{String}}}}`: a dictionary of titles for the transformed components of the trajectory. The keys of the dictionary are the components of the trajectory to transform, and the values are either a single string or a vector of strings that correspond to a vector of transformations. If a single string is provided, it is applied to each transformation of the component. If a vector of strings is provided, a separate title is created for each function. The default is `nothing`.
 
 ## style
-- `res::Tuple{Int, Int}`: the resolution of the figure, `(width, height)`. The default is `(1200, 800)`.
+- `fig_size::Tuple{Int, Int}`: the size of the figure, `(width, height)`. The default is `(1200, 800)`.
 - `titlesize::Int`: the size of the titles. The default is `25`.
 - `series_color::Symbol`: the color of the series. The default is `:glasbey_bw_minc_20_n256`. See options [here](https://docs.makie.org/stable/explanations/colors/index.html#colormaps)
 - `markersize`: the size of the markers. The default is `5`.
@@ -75,25 +75,25 @@ function plot(
                 Vector{<:Union{Nothing, <:AbstractString}}
             }
         }
-    } = nothing,
+    } = OrderedDict{Symbol, Union{Nothing, Vector{Nothing}}}(name => f isa Vector ? fill(nothing, length(f)) : nothing for (name, f) ∈ transformations),
 
     # whether or not to include labels for transformed components
     include_transformation_labels::Union{
         Bool,
-        Vector{<:Union{Bool, Vector{Bool}}}
+        Vector{<:Union{Bool, <:AbstractVector{Bool}}}
     } = false,
 
     # titles for transformations
     transformation_titles::Union{
         Nothing,
-        OrderedDict{Symbol, <:Union{<:AbstractString, Vector{<:AbstractString}}}
+        OrderedDict{Symbol, <:Union{<:AbstractString, <:AbstractVector{<:AbstractString}}}
     } = nothing,
 
     # ---------------------------------------------------------------------------
     # style keyword arguments
     # ---------------------------------------------------------------------------
 
-    res::Tuple{Int, Int}=(1200, 800),
+    fig_size::Tuple{Int, Int}=(1200, 800),
     titlesize::Int=25,
     markersize=5,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
@@ -145,16 +145,16 @@ function plot(
     @assert all([key ∈ keys(traj.components) for key ∈ comps])
     @assert all([key ∈ keys(traj.components) for key ∈ keys(transformations)])
 
-    ts = times(traj)
+    ts = get_times(traj)
 
     # create figure
-    fig = Figure(resolution=res)
+    fig = Figure(size=fig_size)
 
     # initialize axis count
     ax_count = 0
 
     # plot transformed components
-    for ((key, f), include_transformation_labels_k) ∈ zip(
+    for ((name, f), include_transformation_labels_k) ∈ zip(
         transformations,
         include_transformation_labels
     )
@@ -164,8 +164,8 @@ function plot(
 
             for (j, fⱼ) in enumerate(f)
 
-                # data matrix for key component of trajectory
-                data = traj[key]
+                # data matrix for name component of trajectory
+                data = traj[name]
 
                 # apply transformation fⱼ to each column of data
                 transformed_data = mapslices(fⱼ, data; dims=1)
@@ -174,7 +174,7 @@ function plot(
                 ax = Axis(
                     fig[ax_count + 1, 1];
 
-                    title= isnothing(transformation_titles) ? latexstring(key, "(t)", "\\text{ transformation } $j") : transformation_titles[key][j],
+                    title= isnothing(transformation_titles) ? latexstring(name, "(t)", "\\text{ transformation } $j") : transformation_titles[name][j],
                     titlesize=titlesize,
                     xlabel=L"t"
                 )
@@ -182,14 +182,11 @@ function plot(
                 # plot transformed data
                 if include_transformation_labels_k[j]
 
-                    if isnothing(transformation_labels[key][j])
-                        labels = [
-                            latexstring(key, "_{$i}")
-                                for i = 1:size(transformed_data, 2)
-                        ]
+                    if isnothing(transformation_labels[name][j])
+                        labels = string.(1:size(transformed_data, 2))
                     else
                         labels = [
-                            latexstring(transformation_labels[key][j], "_{$i}")
+                            latexstring(transformation_labels[name][j], "_{$i}")
                                 for i = 1:size(transformed_data, 2)
                         ]
                     end
@@ -219,19 +216,19 @@ function plot(
             end
         else
 
-            # data matrix for key componenent of trajectory
-            data = traj[key]
+            # data matrix for name componenent of trajectory
+            data = traj[name]
 
             # apply transformation f to each column of data
             transformed_data = mapslices(f, data; dims=1)
 
             if isnothing(transformation_titles)
-                title = latexstring(key, "(t)", "\\text{ transformation}")
+                title = latexstring(name, "(t)", "\\text{ transformation}")
             else
-                if isnothing(transformation_titles[key])
-                    title = latexstring(key, "(t)", "\\text{ transformation}")
+                if isnothing(transformation_titles[name])
+                    title = latexstring(name, "(t)", "\\text{ transformation}")
                 else
-                    title = transformation_titles[key]
+                    title = transformation_titles[name]
                 end
             end
 
@@ -239,7 +236,7 @@ function plot(
             ax = Axis(
                 fig[ax_count + 1, :];
                 title = isnothing(transformation_titles)
-                ? latexstring(key, "(t)", "\\text{ transformation}") : transformation_titles[key],
+                ? latexstring(name, "(t)", "\\text{ transformation}") : transformation_titles[name],
                 titlesize=titlesize,
                 xlabel=L"t"
             )
@@ -247,14 +244,14 @@ function plot(
             # plot transformed data
             if include_transformation_labels_k
 
-                if isnothing(transformation_labels[key])
+                if isnothing(transformation_labels[name])
                     labels = [
-                        latexstring(key, "_{$i}")
+                        latexstring(name, "_{$i}")
                             for i = 1:size(transformed_data, 2)
                     ]
                 else
                     labels = [
-                        latexstring(transformation_labels[key], "_{$i}")
+                        latexstring(transformation_labels[name], "_{$i}")
                             for i = 1:size(transformed_data, 2)
                     ]
                 end
@@ -286,28 +283,28 @@ function plot(
     end
 
     # plot normal components
-    for key in comps
+    for name in comps
 
-        if traj.timestep isa Symbol && key == traj.timestep && ignore_timestep
+        if traj.timestep isa Symbol && name == traj.timestep && ignore_timestep
             continue
         end
 
-        # data matrix for key componenent of trajectory
-        data = traj[key]
+        # data matrix for name componenent of trajectory
+        data = traj[name]
 
         # create axis for data
         ax = Axis(
             fig[ax_count + 1, 1];
-            title=latexstring(key, "(t)"),
+            title=latexstring(name, "(t)"),
             titlesize=titlesize,
             xlabel=L"t"
         )
 
-        # create labels if key is not in ignored_labels
-        if key ∈ ignored_labels
+        # create labels if name is not in ignored_labels
+        if name ∈ ignored_labels
             labels = nothing
         else
-            labels = [latexstring(key, "_{$i}") for i = 1:size(data, 1)]
+            labels = [latexstring(name, "_{$i}") for i = 1:size(data, 1)]
         end
 
         # plot data
@@ -322,7 +319,7 @@ function plot(
         )
 
         # create legend
-        if key ∉ ignored_labels
+        if name ∉ ignored_labels
             Legend(fig[ax_count + 1, 2], ax)
         end
 

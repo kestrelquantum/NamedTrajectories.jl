@@ -6,8 +6,8 @@ export remove_component
 export remove_components
 export update!
 export update_bound!
-export times
-export timesteps
+export get_times
+export get_timesteps
 
 using OrderedCollections
 
@@ -20,7 +20,7 @@ function StructKnotPoint.KnotPoint(
     t::Int
 )
     @assert 1 ≤ t ≤ Z.T
-    timestep = timesteps(Z)[t]
+    timestep = get_timesteps(Z)[t]
     return KnotPoint(t, Z.data[:, t], timestep, Z.components, Z.names, Z.control_names)
 end
 
@@ -80,18 +80,7 @@ function components(traj::NamedTrajectory)
 end
 
 
-"""
-    timesteps(::NamedTrajectory)
 
-Returns the timesteps of a trajectory as a vector.
-"""
-function timesteps(traj::NamedTrajectory)
-    if traj.timestep isa Symbol
-        return vec(traj[traj.timestep])
-    else
-        return fill(traj.timestep, traj.T)
-    end
-end
 
 """
     add_component!(traj, name::Symbol, data::AbstractVecOrMat; type={:state, :control})
@@ -189,9 +178,11 @@ function remove_component(traj::NamedTrajectory, name::Symbol; new_control=nothi
         (key => data) for (key, data) ∈ pairs(components(traj)) if key != name
     ])
     if name ∈ traj.control_names
-        @assert !isnothing(new_control)
-        traj.control_names = filter!(n -> n != name, traj.control_names)
-        traj.control_names = (traj.control_names..., new_control)
+        if isempty([n for n ∈ traj.control_names if n != name])
+            @assert !isnothing(new_control)
+            control_names = filter!(n -> n != name, collect(traj.control_names))
+            traj.control_names = (control_names..., new_control)
+        end
     end
     return NamedTrajectory(comps, traj)
 end
@@ -211,12 +202,14 @@ function remove_components(
         (key => data) for (key, data) ∈ pairs(components(traj)) if !(key ∈ names)
     ])
     if any([name ∈ traj.control_names for name ∈ names])
-        @assert !isnothing(new_control_names)
-        if new_control_names isa Symbol
-            new_control_names = (new_control_names,)
+        if isempty([n for n ∈ traj.control_names if !(n ∈ names)])
+            @assert !isnothing(new_control_names)
+            if new_control_names isa Symbol
+                new_control_names = (new_control_names,)
+            end
+            control_names = Tuple(filter!(n -> n ∉ names, collect(traj.control_names)))
+            traj.control_names = (control_names..., new_control_names...)
         end
-        traj.control_names = Tuple(filter!(n -> n ∉ names, [traj.control_names...]))
-        traj.control_names = (traj.control_names..., new_control_names...)
     end
 
     return NamedTrajectory(comps, traj)
@@ -289,11 +282,11 @@ end
 
 
 """
-    times(traj)::Vector{Float64}
+    get_times(traj)::Vector{Float64}
 
 Returns the times of a trajectory as a vector.
 """
-function times(traj::NamedTrajectory)
+function get_times(traj::NamedTrajectory)
     if traj.timestep isa Symbol
         return cumsum([0.0, vec(traj[traj.timestep])[1:end-1]...])
     else
@@ -301,6 +294,18 @@ function times(traj::NamedTrajectory)
     end
 end
 
+"""
+    get_timesteps(::NamedTrajectory)
+
+Returns the timesteps of a trajectory as a vector.
+"""
+function get_timesteps(traj::NamedTrajectory)
+    if traj.timestep isa Symbol
+        return vec(traj[traj.timestep])
+    else
+        return fill(traj.timestep, traj.T)
+    end
+end
 
 """
     size(traj::NamedTrajectory) = (dim = traj.dim, T = traj.T)
