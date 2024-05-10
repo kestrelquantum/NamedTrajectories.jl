@@ -8,6 +8,7 @@ export update!
 export update_bound!
 export get_times
 export get_timesteps
+export get_duration
 
 using OrderedCollections
 
@@ -305,6 +306,15 @@ function get_timesteps(traj::NamedTrajectory)
     else
         return fill(traj.timestep, traj.T)
     end
+end
+
+"""
+    get_duration(::NamedTrajectory)
+
+Returns the duration of a trajectory.
+"""
+function get_duration(traj::NamedTrajectory)
+    return get_times(traj)[end]
 end
 
 """
