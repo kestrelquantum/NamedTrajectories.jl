@@ -20,6 +20,12 @@ function load_traj(filename::String)
     return load(filename, "traj")
 end
 
+"""
+    derivative(X::AbstractMatrix, Δt::AbstractVecOrMat)
+    derivative(X::AbstractMatrix, Δt::Float64)
+
+Compute the derivative of the data matrix `X`.
+"""
 function derivative(X::AbstractMatrix, Δt::AbstractVecOrMat)
     if Δt isa AbstractMatrix
         @assert size(Δt, 1) == 1 "X must be a row vector if Δt is a matrix"
@@ -27,21 +33,30 @@ function derivative(X::AbstractMatrix, Δt::AbstractVecOrMat)
     end
     @assert size(X, 2) == length(Δt) "number of columns of X ($(size(X, 2))) must equal length of Δt ($(length(Δt))"
     dX = similar(X)
-    dX[:, 1] = zeros(size(X, 1))
-    for t = axes(X, 2)[2:end]
-        Δx = X[:, t] - X[:, t - 1]
-        h = Δt[t - 1]
-        dX[:, t] .= Δx / h
+
+    dX[:, 1] = (X[:, 2] - X[:, 1]) / Δt[1]
+
+    for t = axes(X, 2)[2:end-1]
+        Δx = X[:, t + 1] - X[:, t]
+        h = Δt[t]
+        dX[:, t] = Δx / h
     end
     return dX
 end
 
 derivative(X::AbstractMatrix, Δt::Float64) = derivative(X, fill(Δt, size(X, 2)))
 
+
+"""
+    integral(X::AbstractMatrix, Δt::AbstractVector)
+    integral(X::AbstractMatrix, Δt::Float64)
+
+Compute the integral of the data matrix `X`.
+"""
 function integral(X::AbstractMatrix, Δt::AbstractVector)
     ∫X = similar(X)
     ∫X[:, 1] = zeros(size(X, 1))
-    for t = 2:size(X, 2)
+    for t = axes(X, 2)[2:end]
         # trapezoidal rule
         ∫X[:, t] = ∫X[:, t-1] + (X[:, t] + X[:, t-1])/2 * Δt[t-1]
     end
