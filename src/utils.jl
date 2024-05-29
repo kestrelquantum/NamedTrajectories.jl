@@ -31,8 +31,8 @@ function derivative(X::AbstractMatrix, Δt::AbstractVecOrMat)
         @assert size(Δt, 1) == 1 "X must be a row vector if Δt is a matrix"
         Δt = Δt[1, :]
     end
-    @assert size(X, 2) == length(Δt) "number of columns of X ($(size(X, 2))) must equal length of Δt ($(length(Δt))"
-    dX = similar(X)
+    @assert size(X, 2) == length(Δt) "number of columns of X ($(size(X, 2))) must equal length of Δt ($(length(Δt)))"
+    dX = zeros(eltype(X), size(X))
 
     dX[:, 1] = (X[:, 2] - X[:, 1]) / Δt[1]
 
@@ -41,6 +41,8 @@ function derivative(X::AbstractMatrix, Δt::AbstractVecOrMat)
         h = Δt[t]
         dX[:, t] = Δx / h
     end
+
+    dX[:, end] = dX[:, end-1]
     return dX
 end
 

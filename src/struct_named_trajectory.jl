@@ -164,6 +164,7 @@ function NamedTrajectory(
     kwargs...
 )
     @assert all([v isa AbstractMatrix || v isa AbstractVector for v ∈ values(comps)])
+    @assert all([eltype(v) isa Real for v ∈ values(comps)])
     vals = [v isa AbstractVector ? reshape(v, 1, :) : v for v ∈ values(comps)]
     comps = NamedTuple([(k => v) for (k, v) ∈ zip(keys(comps), vals)])
     return NamedTrajectory(comps; kwargs...)
