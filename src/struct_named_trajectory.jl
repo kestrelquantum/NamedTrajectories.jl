@@ -8,6 +8,9 @@ using OrderedCollections
 
 const BoundType = Tuple{AbstractVector{<:Real}, AbstractVector{<:Real}}
 
+"""
+    NamedTrajectory constructor
+"""
 mutable struct NamedTrajectory{R <: Real}
     data::AbstractMatrix{R}
     datavec::AbstractVector{R}
@@ -25,7 +28,18 @@ mutable struct NamedTrajectory{R <: Real}
     control_names::Tuple{Vararg{Symbol}}
 end
 
+"""
+    NamedTrajectory(comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
 
+    # Arguments
+    - `comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: Components data.
+    - `controls`: The control variable in comp_data, should be type of `Symbol` among `comp_data`.
+    - `timestep`: Discretizing time step in `comp_data`, should be type of `Symbol` among `comp_data`.
+    - `bounds`: Bounds of the trajectory.
+    - `initial`: Initial values.
+    - `final`: Final values.
+    - `goal`: Goal for the states.
+"""
 function NamedTrajectory(
     comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
         {names, vals <: AbstractMatrix{R}};
@@ -159,6 +173,13 @@ function NamedTrajectory(
     )
 end
 
+"""
+    NamedTrajectory(comps; kwargs...)
+
+    # Arguments
+    - `comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: Components data.
+    - `kwargs...`: The other key word arguments.
+"""
 function NamedTrajectory(
     comps::NamedTuple;
     kwargs...
@@ -173,7 +194,20 @@ end
 
 
 
+"""
+    NamedTrajectory(datavec, T, comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
 
+    # Arguments
+    - `datavec::AbstractVector{R} where R <: Real`: Trajectory data.
+    - `T::Int`: Numbers of time step.
+    - `comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: components data.
+    - `controls`: The control variable in comp_data, should be type of `Symbol` among `comp_data`.
+    - `timestep`: Discretizing time step in `comp_data`, should be type of `Symbol` among `comp_data`.
+    - `bounds`: Bounds of the trajectory.
+    - `initial`: Initial values.
+    - `final`: Final values.
+    - `goal`: Goal for the states.
+"""
 function NamedTrajectory(
     datavec::AbstractVector{R},
     T::Int,
@@ -263,6 +297,13 @@ function NamedTrajectory(
     )
 end
 
+"""
+    NamedTrajectory(comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
+
+    # Arguments
+    - `datavec::AbstractVector{R} where R <: Real`: Trajectory data.
+    - `z`: Constructed `NamedTrajectory`.
+"""
 function NamedTrajectory(
     datavec::AbstractVector{R},
     Z::NamedTrajectory
@@ -293,6 +334,13 @@ function NamedTrajectory(
     )
 end
 
+"""
+    NamedTrajectory(data, traj)
+
+    # Arguments
+    - `data`: Trajectory data.
+    - `traj`: Constructed `NamedTrajectory`.
+"""
 function NamedTrajectory(
     data::AbstractMatrix{R},
     traj::NamedTrajectory
@@ -323,6 +371,14 @@ function NamedTrajectory(
     )
 end
 
+"""
+    NamedTrajectory(data, componets; kwargs...)
+
+    # Arguments
+    - `data::AbstractMatrix{R}`: Trajectory data.
+    - `components::NamedTuple{names, <:Tuple{Vararg{AbstractVector{Int}}}} where names`: components data.
+    - `kwargs...` : The other key word arguments.
+"""
 function NamedTrajectory(
     data::AbstractMatrix{R},
     components::NamedTuple{
@@ -336,6 +392,14 @@ function NamedTrajectory(
     return NamedTrajectory(datavec, T, components; kwargs...)
 end
 
+"""
+    NamedTrajectory(comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
+
+    # Arguments
+    - `comps::NamedTuple{names, <:Tuple{Vararg{AbstractMatrix{R}}}} where {names}`: components data.
+    - `traj`: Constructed NamedTrajectory.
+    - `goal`: Goal for the states.
+"""
 function NamedTrajectory(
     comps::NamedTuple{
         names,
