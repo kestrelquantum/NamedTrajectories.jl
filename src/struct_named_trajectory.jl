@@ -20,6 +20,7 @@ mutable struct NamedTrajectory{R <: Real}
     final::NamedTuple{fnames, <:Tuple{Vararg{AbstractVector{R}}}} where fnames
     goal::NamedTuple{gnames, <:Tuple{Vararg{AbstractVector{R}}}} where gnames
     components::NamedTuple{cnames, <:Tuple{Vararg{AbstractVector{Int}}}} where cnames
+    params::NamedTuple{pnames, <:Tuple{Vararg{AbstractVector{R}}}} where pnames
     names::Tuple{Vararg{Symbol}}
     state_names::Tuple{Vararg{Symbol}}
     control_names::Tuple{Vararg{Symbol}}
@@ -35,6 +36,7 @@ function NamedTrajectory(
     initial=(;),
     final=(;),
     goal=(;),
+    params=(;),
 ) where R <: Real
     controls = controls isa Symbol ? (controls,) : controls
 
@@ -153,6 +155,7 @@ function NamedTrajectory(
         final,
         goal,
         comps,
+        params,
         names,
         state_names,
         controls
@@ -187,6 +190,7 @@ function NamedTrajectory(
     initial=(;),
     final=(;),
     goal=(;),
+    params=(;),
 ) where R <: Real
     controls = (controls isa Symbol) ? (controls,) : controls
 
@@ -257,6 +261,7 @@ function NamedTrajectory(
         final,
         goal,
         components,
+        params,
         names,
         state_names,
         controls
@@ -287,6 +292,7 @@ function NamedTrajectory(
         Z.final,
         Z.goal,
         Z.components,
+        z.params,
         Z.names,
         Z.state_names,
         Z.control_names
@@ -317,6 +323,7 @@ function NamedTrajectory(
         traj.final,
         traj.goal,
         traj.components,
+        traj.params,
         traj.names,
         traj.state_names,
         traj.control_names
@@ -352,6 +359,7 @@ function NamedTrajectory(
     initial = NamedTuple([(k => traj.initial[k]) for k ∈ keys(comps) if k ∈ keys(traj.initial)])
     final = NamedTuple([(k => traj.final[k]) for k ∈ keys(comps) if k ∈ keys(traj.final)])
     goal = NamedTuple([(k => traj.goal[k]) for k ∈ keys(comps) if k ∈ keys(traj.goal)])
+    params = NamedTuple([(k => traj.params[k]) for k ∈ keys(comps) if k ∈ keys(traj.params)])
 
     return NamedTrajectory(
         comps;
@@ -361,6 +369,7 @@ function NamedTrajectory(
         initial=initial,
         final=final,
         goal=goal,
+        params
     )
 
 end
