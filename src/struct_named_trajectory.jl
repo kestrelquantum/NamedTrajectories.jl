@@ -292,7 +292,7 @@ function NamedTrajectory(
         Z.final,
         Z.goal,
         Z.components,
-        z.params,
+        Z.params,
         Z.names,
         Z.state_names,
         Z.control_names
