@@ -7,14 +7,16 @@ push!(LOAD_PATH, joinpath(@__DIR__, "..", "src"))
 pages = [
     "Home" => "index.md",
     "Quickstart Guide" => "generated/quickstart.md",
-    # "Manual" => [
+    "Manual" => [
+
     #     "generated/man/constructors.md",
     #     "generated/man/retrieval.md",
     #     "generated/man/add_remove.md",
     #     "generated/man/updating.md",
     #     "generated/man/times.md",
     #     "generated/man/operations.md",
-    # ],
+        "generated/man/params_in_struct.md",
+    ],
     "Plotting" => "generated/plotting.md",
     "Library" => "lib.md"
 ]
@@ -63,6 +65,7 @@ makedocs(;
     modules=[NamedTrajectories],
     authors="Aaron Trowbridge <aaron.j.trowbridge@gmail.com> and contributors",
     sitename="NamedTrajectories.jl",
+    warnonly=[:missing_docs],
     format=format,
     pages=pages,
 )
