@@ -8,14 +8,14 @@ pages = [
     "Home" => "index.md",
     "Quickstart Guide" => "generated/quickstart.md",
     "Manual" => [
-
-    #     "generated/man/constructors.md",
+        "generated/man/constructors.md",
+         "generated/man/params_in_struct.md",
     #     "generated/man/retrieval.md",
     #     "generated/man/add_remove.md",
     #     "generated/man/updating.md",
     #     "generated/man/times.md",
     #     "generated/man/operations.md",
-        "generated/man/params_in_struct.md",
+
     ],
     "Plotting" => "generated/plotting.md",
     "Library" => "lib.md"
@@ -65,7 +65,7 @@ makedocs(;
     modules=[NamedTrajectories],
     authors="Aaron Trowbridge <aaron.j.trowbridge@gmail.com> and contributors",
     sitename="NamedTrajectories.jl",
-    warnonly=[:missing_docs],
+    warnonly = [:missing_docs],
     format=format,
     pages=pages,
 )
