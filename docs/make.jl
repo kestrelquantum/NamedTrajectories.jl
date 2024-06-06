@@ -9,11 +9,13 @@ pages = [
     "Quickstart Guide" => "generated/quickstart.md",
     "Manual" => [
         "generated/man/constructors.md",
+         "generated/man/params_in_struct.md",
     #     "generated/man/retrieval.md",
     #     "generated/man/add_remove.md",
     #     "generated/man/updating.md",
     #     "generated/man/times.md",
     #     "generated/man/operations.md",
+
     ],
     "Plotting" => "generated/plotting.md",
     "Library" => "lib.md"
