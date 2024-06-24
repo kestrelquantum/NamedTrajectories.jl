@@ -1,6 +1,6 @@
 module MethodsNamedTrajectory
 
-export components
+export get_components
 export add_component!
 export remove_component
 export remove_components
@@ -75,7 +75,7 @@ end
 
 Returns a NamedTuple containing the names and corresponding data matrices of the trajectory.
 """
-function components(traj::NamedTrajectory)
+function get_components(traj::NamedTrajectory)
     data = [traj[comp] for comp ∈ traj.names]
     return NamedTuple(zip(traj.names, data))
 end
@@ -176,7 +176,7 @@ Remove a component from the trajectory.
 function remove_component(traj::NamedTrajectory, name::Symbol; new_control=nothing)
     @assert name ∈ traj.names
     comps = NamedTuple([
-        (key => data) for (key, data) ∈ pairs(components(traj)) if key != name
+        (key => data) for (key, data) ∈ pairs(get_components(traj)) if key != name
     ])
     if name ∈ traj.control_names
         if isempty([n for n ∈ traj.control_names if n != name])
@@ -200,7 +200,7 @@ function remove_components(
 )
     @assert all([name ∈ traj.names for name ∈ names])
     comps = NamedTuple([
-        (key => data) for (key, data) ∈ pairs(components(traj)) if !(key ∈ names)
+        (key => data) for (key, data) ∈ pairs(get_components(traj)) if !(key ∈ names)
     ])
     if any([name ∈ traj.control_names for name ∈ names])
         if isempty([n for n ∈ traj.control_names if !(n ∈ names)])
