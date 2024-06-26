@@ -71,16 +71,17 @@ end
 
 
 """
-    components(::NamedTrajectory)
+    get_components(::NamedTrajectory)
 
 Returns a NamedTuple containing the names and corresponding data matrices of the trajectory.
 """
-function get_components(traj::NamedTrajectory)
-    data = [traj[comp] for comp ∈ traj.names]
-    return NamedTuple(zip(traj.names, data))
+function get_components(cnames::Union{Tuple, AbstractVector}, traj::NamedTrajectory)
+    symbs = Tuple(c for c in cnames)
+    vals = [traj[c] for c ∈ cnames]
+    return NamedTuple{symbs}(vals)
 end
 
-
+get_components(traj::NamedTrajectory) = get_components(traj.names, traj)
 
 
 """
