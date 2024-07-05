@@ -200,7 +200,7 @@ function remove_components(
     new_control_names::Union{Nothing, Tuple{Vararg{Symbol}}}=nothing
 )
     @assert all([n ∈ traj.names for n ∈ names])
-    @assert !isnothing(new_control_name) ⊻ !isnothing(new_control_names) "Exclusively one or multiple new control names can be provided"
+    @assert isnothing(new_control_name) || isnothing(new_control_names) "Conflicting new control names provided"
     new_control_names = isnothing(new_control_names) ? () : new_control_names    
     new_control_names = isnothing(new_control_name) ? (new_control_names...,) : (new_control_name,)
     @assert isnothing(new_control_names) || all([n ∈ traj.names && n ∉ names for n ∈ new_control_names]) "New control names must be valid components"
