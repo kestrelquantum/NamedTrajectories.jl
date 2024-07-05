@@ -311,32 +311,32 @@ end
 """
 function NamedTrajectory(
     datavec::AbstractVector{R},
-    Z::NamedTrajectory
+    traj::NamedTrajectory
 ) where R <: Real
-    @assert length(datavec) == length(Z.datavec)
+    @assert length(datavec) == length(traj.datavec)
 
     # collecting here to prevent overlapping views
     # TODO: is this necessary?
     datavec = collect(datavec)
 
-    data = reshape(view(datavec, :), :, Z.T)
+    data = reshape(view(datavec, :), :, traj.T)
 
     return NamedTrajectory{R}(
         data,
         datavec,
-        Z.T,
-        Z.timestep,
-        Z.dim,
-        Z.dims,
-        Z.bounds,
-        Z.initial,
-        Z.final,
-        Z.goal,
-        Z.components,
-        Z.params,
-        Z.names,
-        Z.state_names,
-        Z.control_names
+        traj.T,
+        traj.timestep,
+        traj.dim,
+        traj.dims,
+        traj.bounds,
+        traj.initial,
+        traj.final,
+        traj.goal,
+        traj.components,
+        traj.params,
+        traj.names,
+        traj.state_names,
+        traj.control_names
     )
 end
 
@@ -413,11 +413,15 @@ function NamedTrajectory(
         <:Tuple{Vararg{AbstractMatrix{R}}}
     } where names,
     traj::NamedTrajectory;
+    new_control_names::Tuple{Vararg{Symbol}}=()
 ) where R <: Real
     @assert all([k ∈ traj.names for k ∈ keys(comps)])
 
-    controls = Tuple([name for name ∈ traj.control_names if name ∈ keys(comps)])
-    @assert !isempty(controls) "must specify at least one control"
+    control_names = (
+        [name for name ∈ traj.control_names if name ∈ keys(comps) && name ∉ new_control_names]...,
+        new_control_names...
+    )
+    @assert !isempty(control_names) "must specify at least one control"
 
     bounds = NamedTuple([(k => traj.bounds[k]) for k ∈ keys(comps) if k ∈ keys(traj.bounds)])
     initial = NamedTuple([(k => traj.initial[k]) for k ∈ keys(comps) if k ∈ keys(traj.initial)])
@@ -427,7 +431,7 @@ function NamedTrajectory(
 
     return NamedTrajectory(
         comps;
-        controls=controls,
+        controls=control_names,
         timestep=traj.timestep,
         bounds=bounds,
         initial=initial,
