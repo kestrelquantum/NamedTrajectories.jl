@@ -174,19 +174,18 @@ end
 
 Remove a component from the trajectory.
 """
-function remove_component(traj::NamedTrajectory, name::Symbol; new_control=nothing)
-    @assert name ∈ traj.names
-    comps = NamedTuple([
-        (key => data) for (key, data) ∈ pairs(get_components(traj)) if key != name
-    ])
-    if name ∈ traj.control_names
-        if isempty([n for n ∈ traj.control_names if n != name])
-            @assert !isnothing(new_control)
-            control_names = filter!(n -> n != name, collect(traj.control_names))
-            traj.control_names = (control_names..., new_control)
-        end
-    end
-    return NamedTrajectory(comps, traj)
+function remove_component(
+    traj::NamedTrajectory, 
+    name::Symbol; 
+    new_control_name::Union{Nothing, Symbol}=nothing,
+    new_control_names::Union{Nothing, Tuple{Vararg{Symbol}}}=nothing
+)
+    return remove_components(
+        traj,
+        [name];
+        new_control_name=new_control_name,
+        new_control_names=new_control_names
+    )
 end
 
 """
@@ -196,25 +195,23 @@ Remove a set of components from the trajectory.
 """
 function remove_components(
     traj::NamedTrajectory,
-    names::Vector{Symbol};
-    new_control_names=nothing
+    names::AbstractVector{<:Symbol};
+    new_control_name::Union{Nothing, Symbol}=nothing,
+    new_control_names::Union{Nothing, Tuple{Vararg{Symbol}}}=nothing
 )
-    @assert all([name ∈ traj.names for name ∈ names])
+    @assert all([n ∈ traj.names for n ∈ names])
+    @assert isnothing(new_control_name) || isnothing(new_control_names) "Conflicting new control names provided"
+    new_control_names = isnothing(new_control_names) ? () : new_control_names    
+    new_control_names = isnothing(new_control_name) ? (new_control_names...,) : (new_control_name,)
+    @assert isnothing(new_control_names) || all([n ∈ traj.names && n ∉ names for n ∈ new_control_names]) "New control names must be valid components"
+
     comps = NamedTuple([
         (key => data) for (key, data) ∈ pairs(get_components(traj)) if !(key ∈ names)
     ])
-    if any([name ∈ traj.control_names for name ∈ names])
-        if isempty([n for n ∈ traj.control_names if !(n ∈ names)])
-            @assert !isnothing(new_control_names)
-            if new_control_names isa Symbol
-                new_control_names = (new_control_names,)
-            end
-            control_names = Tuple(filter!(n -> n ∉ names, collect(traj.control_names)))
-            traj.control_names = (control_names..., new_control_names...)
-        end
-    end
 
-    return NamedTrajectory(comps, traj)
+    control_names = [n for n ∈ traj.control_names if n ∉ names]
+    @assert !isempty(control_names) || !isnothing(new_control_names) "At least one control must be available"
+    return NamedTrajectory(comps, traj; new_control_names=new_control_names)
 end
 
 """
