@@ -55,6 +55,7 @@ function plot(
 
     ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}}=(),
     ignore_timestep::Bool=true,
+    merge_components::Bool=false,
 
     # ---------------------------------------------------------------------------
     # transformation keyword arguments
@@ -282,8 +283,18 @@ function plot(
         end
     end
 
+    # create shared axis for data
+    if merge_components
+        ax = Axis(
+            fig[ax_count + 1, 1];
+            title=latexstring("Trajectory"),
+            titlesize=titlesize,
+            xlabel=L"t"
+        )
+    end
+
     # plot normal components
-    for name in comps
+    for (i, name) in enumerate(comps)
 
         if traj.timestep isa Symbol && name == traj.timestep && ignore_timestep
             continue
@@ -293,12 +304,14 @@ function plot(
         data = traj[name]
 
         # create axis for data
-        ax = Axis(
-            fig[ax_count + 1, 1];
-            title=latexstring(name, "(t)"),
-            titlesize=titlesize,
-            xlabel=L"t"
-        )
+        if !merge_components
+            ax = Axis(
+                fig[ax_count + 1, 1];
+                title=latexstring(name, "(t)"),
+                titlesize=titlesize,
+                xlabel=L"t"
+            )
+        end
 
         # create labels if name is not in ignored_labels
         if name ∈ ignored_labels
@@ -324,7 +337,9 @@ function plot(
         end
 
         # increment axis count
-        ax_count += 1
+        if !merge_components
+            ax_count += 1
+        end
     end
 
     return fig
