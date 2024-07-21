@@ -24,6 +24,7 @@ mutable struct NamedTrajectory{R <: Real}
     goal::NamedTuple{gnames, <:Tuple{Vararg{AbstractVector{R}}}} where gnames
     components::NamedTuple{cnames, <:Tuple{Vararg{AbstractVector{Int}}}} where cnames
     global_data::NamedTuple{pnames, <:Tuple{Vararg{AbstractVector{R}}}} where pnames
+    global_dim::Int
     names::Tuple{Vararg{Symbol}}
     state_names::Tuple{Vararg{Symbol}}
     control_names::Tuple{Vararg{Symbol}}
@@ -78,6 +79,10 @@ function NamedTrajectory(
         controls = (controls..., timestep)
     end
 
+    names = Tuple(keys(component_data))
+
+    state_names = Tuple(k for k ∈ names if k ∉ controls)
+
     bounds_dict = OrderedDict{Symbol,Any}(pairs(bounds))
 
     for (name, bound) ∈ bounds_dict
@@ -105,12 +110,12 @@ function NamedTrajectory(
     end
 
     data = vcat([val for (key, val) ∈ component_data_pairs]...)
-    dim = size(data, 1)
-    T = size(data, 2)
+    dim, T = size(data)
 
     # do this to store data matrix as view of datavec
     datavec = vec(data)
-    data = reshape(view(datavec, 1:*(size(data)...)), :, T)
+
+    data = reshape(view(datavec, :), :, T)
 
     dims_pairs = [(k => size(v, 1)) for (k, v) ∈ component_data_pairs]
 
@@ -137,22 +142,22 @@ function NamedTrajectory(
     push!(dims_pairs, :states => dim_states)
     push!(dims_pairs, :controls => dim_controls)
 
+    dims = NamedTuple(dims_pairs)
+
     # add states and controls to components
 
-    comp_tuple = NamedTuple(comp_pairs)
-
-    states_comps = vcat([comp_tuple[k] for k ∈ keys(component_data) if k ∉ controls]...)
-    controls_comps = vcat([comp_tuple[k] for k ∈ keys(component_data) if k ∈ controls]...)
+    temp_comp_tuple = NamedTuple(comp_pairs)
+    states_comps = vcat([temp_comp_tuple[k] for k ∈ keys(component_data) if k ∉ controls]...)
+    controls_comps = vcat([temp_comp_tuple[k] for k ∈ keys(component_data) if k ∈ controls]...)
 
     push!(comp_pairs, :states => states_comps)
     push!(comp_pairs, :controls => controls_comps)
 
-    dims = NamedTuple(dims_pairs)
     comps = NamedTuple(comp_pairs)
 
-    names = Tuple(keys(component_data))
-
-    state_names = Tuple(k for k ∈ names if k ∉ controls)
+    # global dims
+    
+    global_dim = sum([length(v) for v ∈ values(global_data)])
 
     return NamedTrajectory{R}(
         data,
@@ -167,6 +172,7 @@ function NamedTrajectory(
         goal,
         comps,
         global_data,
+        global_dim,
         names,
         state_names,
         controls
@@ -270,6 +276,10 @@ function NamedTrajectory(
 
     state_names = Tuple(k for k ∈ names if k ∉ controls)
 
+    # global dims
+    
+    global_dim = sum([length(v) for v ∈ values(global_data)])
+
     return NamedTrajectory{R}(
         data,
         datavec,
@@ -283,6 +293,7 @@ function NamedTrajectory(
         goal,
         components,
         global_data,
+        global_dim,
         names,
         state_names,
         controls
@@ -321,6 +332,7 @@ function NamedTrajectory(
         traj.goal,
         traj.components,
         traj.global_data,
+        traj.global_dim,
         traj.names,
         traj.state_names,
         traj.control_names
@@ -359,6 +371,7 @@ function NamedTrajectory(
         traj.goal,
         traj.components,
         traj.global_data,
+        traj.global_dim,
         traj.names,
         traj.state_names,
         traj.control_names
