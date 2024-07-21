@@ -211,7 +211,7 @@ function NamedTrajectory(
     initial=(;),
     final=(;),
     goal=(;),
-    params=(;),
+    global_data=(;),
 ) where R <: Real
     controls = (controls isa Symbol) ? (controls,) : controls
 
@@ -282,7 +282,7 @@ function NamedTrajectory(
         final,
         goal,
         components,
-        params,
+        global_data,
         names,
         state_names,
         controls
@@ -414,7 +414,7 @@ function NamedTrajectory(
     initial = NamedTuple([(k => traj.initial[k]) for k ∈ keys(comps) if k ∈ keys(traj.initial)])
     final = NamedTuple([(k => traj.final[k]) for k ∈ keys(comps) if k ∈ keys(traj.final)])
     goal = NamedTuple([(k => traj.goal[k]) for k ∈ keys(comps) if k ∈ keys(traj.goal)])
-    params = NamedTuple([(k => traj.global_data[k]) for k ∈ keys(comps) if k ∈ keys(traj.global_data)])
+    global_data = NamedTuple([(k => traj.global_data[k]) for k ∈ keys(comps) if k ∈ keys(traj.global_data)])
 
     return NamedTrajectory(
         comps;
@@ -424,7 +424,7 @@ function NamedTrajectory(
         initial=initial,
         final=final,
         goal=goal,
-        params
+        global_data
     )
 
 end
