@@ -294,7 +294,7 @@ end
 
     # Arguments
     - `datavec::AbstractVector{R} where R <: Real`: Trajectory data.
-    - `z`: Constructed `NamedTrajectory`.
+    - `traj`: Constructed `NamedTrajectory`.
 """
 function NamedTrajectory(
     datavec::AbstractVector{R},
