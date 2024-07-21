@@ -1,5 +1,6 @@
 module MethodsNamedTrajectory
 
+export vec
 export get_components
 export add_component!
 export remove_component
@@ -25,8 +26,14 @@ function StructKnotPoint.KnotPoint(
     return KnotPoint(t, Z.data[:, t], timestep, Z.components, Z.names, Z.control_names)
 end
 
+"""
+    vec(::NamedTrajectory)
 
-
+Returns all variables of the trajectory as a vector, Z⃗.
+"""
+function Base.vec(Z::NamedTrajectory)
+    return vcat(Z.datavec, values(Z.global_data)...)
+end
 
 
 """
