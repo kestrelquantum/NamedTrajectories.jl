@@ -23,26 +23,26 @@ mutable struct NamedTrajectory{R <: Real}
     final::NamedTuple{fnames, <:Tuple{Vararg{AbstractVector{R}}}} where fnames
     goal::NamedTuple{gnames, <:Tuple{Vararg{AbstractVector{R}}}} where gnames
     components::NamedTuple{cnames, <:Tuple{Vararg{AbstractVector{Int}}}} where cnames
-    params::NamedTuple{pnames, <:Tuple{Vararg{AbstractVector{R}}}} where pnames
+    global_data::NamedTuple{pnames, <:Tuple{Vararg{AbstractVector{R}}}} where pnames
     names::Tuple{Vararg{Symbol}}
     state_names::Tuple{Vararg{Symbol}}
     control_names::Tuple{Vararg{Symbol}}
 end
 
 """
-    NamedTrajectory(comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
+    NamedTrajectory(component_data; controls=(), timestep=nothing, bounds, initial, final, goal)
 
     # Arguments
-    - `comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: Components data.
-    - `controls`: The control variable in comp_data, should be type of `Symbol` among `comp_data`.
-    - `timestep`: Discretizing time step in `comp_data`, should be type of `Symbol` among `comp_data`.
+    - `component_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: Components data.
+    - `controls`: The control variable in component_data, should be type of `Symbol` among `component_data`.
+    - `timestep`: Discretizing time step in `component_data`, should be type of `Symbol` among `component_data`.
     - `bounds`: Bounds of the trajectory.
     - `initial`: Initial values.
     - `final`: Final values.
     - `goal`: Goal for the states.
 """
 function NamedTrajectory(
-    comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
+    component_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where
         {names, vals <: AbstractMatrix{R}};
     controls::Union{Symbol, Tuple{Vararg{Symbol}}}=(),
     timestep::Union{Nothing,Symbol,R}=nothing,
@@ -50,21 +50,21 @@ function NamedTrajectory(
     initial=(;),
     final=(;),
     goal=(;),
-    params=(;),
+    global_data=(;),
 ) where R <: Real
     controls = controls isa Symbol ? (controls,) : controls
 
     @assert !isempty(controls)
     @assert !isnothing(timestep)
-    @assert timestep isa Symbol && timestep ∈ keys(comp_data) ||
+    @assert timestep isa Symbol && timestep ∈ keys(component_data) ||
         timestep isa Real "timestep $(timestep)::$(typeof(timestep)) must be a symbol or real"
 
-    @assert all([k ∈ keys(comp_data) for k ∈ controls])
-    @assert all([k ∈ keys(comp_data) for k ∈ keys(initial)])
-    @assert all([k ∈ keys(comp_data) for k ∈ keys(final)])
-    @assert all([k ∈ keys(comp_data) for k ∈ keys(goal)])
+    @assert all([k ∈ keys(component_data) for k ∈ controls])
+    @assert all([k ∈ keys(component_data) for k ∈ keys(initial)])
+    @assert all([k ∈ keys(component_data) for k ∈ keys(final)])
+    @assert all([k ∈ keys(component_data) for k ∈ keys(goal)])
 
-    @assert all([k ∈ keys(comp_data) for k ∈ keys(bounds)])
+    @assert all([k ∈ keys(component_data) for k ∈ keys(bounds)])
 
     @assert all([
         bound isa Real ||
@@ -83,8 +83,8 @@ function NamedTrajectory(
     for (name, bound) ∈ bounds_dict
         if bound isa Real
             bounds_dict[name] = (
-                -fill(bound, size(comp_data[name], 1)),
-                fill(bound, size(comp_data[name], 1))
+                -fill(bound, size(component_data[name], 1)),
+                fill(bound, size(component_data[name], 1))
             )
         elseif bound isa AbstractVector
             bounds_dict[name] = (-bound, bound)
@@ -94,28 +94,25 @@ function NamedTrajectory(
     end
     bounds = NamedTuple(bounds_dict)
 
-    comp_data_pairs = []
-    for (key, val) ∈ pairs(comp_data)
+    component_data_pairs = []
+    for (key, val) ∈ pairs(component_data)
         if val isa AbstractVector{<:Real}
             data = reshape(val, 1, :)
-            push!(comp_data_pairs, key => data)
+            push!(component_data_pairs, key => data)
         else
-            push!(comp_data_pairs, key => val)
+            push!(component_data_pairs, key => val)
         end
     end
 
-    data = vcat([val for (key, val) ∈ comp_data_pairs]...)
-
+    data = vcat([val for (key, val) ∈ component_data_pairs]...)
+    dim = size(data, 1)
     T = size(data, 2)
 
-    datavec = vec(data)
-
     # do this to store data matrix as view of datavec
-    data = reshape(view(datavec, :), :, T)
+    datavec = vec(data)
+    data = reshape(view(datavec, 1:*(size(data)...)), :, T)
 
-    dim = size(data, 1)
-
-    dims_pairs = [(k => size(v, 1)) for (k, v) ∈ comp_data_pairs]
+    dims_pairs = [(k => size(v, 1)) for (k, v) ∈ component_data_pairs]
 
     dims_tuple = NamedTuple(dims_pairs)
 
@@ -144,8 +141,8 @@ function NamedTrajectory(
 
     comp_tuple = NamedTuple(comp_pairs)
 
-    states_comps = vcat([comp_tuple[k] for k ∈ keys(comp_data) if k ∉ controls]...)
-    controls_comps = vcat([comp_tuple[k] for k ∈ keys(comp_data) if k ∈ controls]...)
+    states_comps = vcat([comp_tuple[k] for k ∈ keys(component_data) if k ∉ controls]...)
+    controls_comps = vcat([comp_tuple[k] for k ∈ keys(component_data) if k ∈ controls]...)
 
     push!(comp_pairs, :states => states_comps)
     push!(comp_pairs, :controls => controls_comps)
@@ -153,7 +150,7 @@ function NamedTrajectory(
     dims = NamedTuple(dims_pairs)
     comps = NamedTuple(comp_pairs)
 
-    names = Tuple(keys(comp_data))
+    names = Tuple(keys(component_data))
 
     state_names = Tuple(k for k ∈ names if k ∉ controls)
 
@@ -169,7 +166,7 @@ function NamedTrajectory(
         final,
         goal,
         comps,
-        params,
+        global_data,
         names,
         state_names,
         controls
@@ -177,14 +174,14 @@ function NamedTrajectory(
 end
 
 """
-    NamedTrajectory(comps; kwargs...)
+    NamedTrajectory(component_data; kwargs...)
 
     # Arguments
-    - `comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: Components data.
+    - `component_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: Components data.
     - `kwargs...`: The other key word arguments.
 """
 function NamedTrajectory(
-    comps::NamedTuple;
+    component_data::NamedTuple;
     kwargs...
 )
     @assert all([v isa AbstractMatrix || v isa AbstractVector for v ∈ values(comps)])
@@ -198,18 +195,8 @@ end
 
 
 """
-    NamedTrajectory(datavec, T, comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
+    NamedTrajectory(datavec, T, components)
 
-    # Arguments
-    - `datavec::AbstractVector{R} where R <: Real`: Trajectory data.
-    - `T::Int`: Numbers of time step.
-    - `comp_data::NamedTuple{names, <:Tuple{Vararg{vals}}} where {names, vals <: AbstractMatrix{R}}`: components data.
-    - `controls`: The control variable in comp_data, should be type of `Symbol` among `comp_data`.
-    - `timestep`: Discretizing time step in `comp_data`, should be type of `Symbol` among `comp_data`.
-    - `bounds`: Bounds of the trajectory.
-    - `initial`: Initial values.
-    - `final`: Final values.
-    - `goal`: Goal for the states.
 """
 function NamedTrajectory(
     datavec::AbstractVector{R},
@@ -303,7 +290,7 @@ function NamedTrajectory(
 end
 
 """
-    NamedTrajectory(comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
+    NamedTrajectory(component_data; controls=(), timestep=nothing, bounds, initial, final, goal)
 
     # Arguments
     - `datavec::AbstractVector{R} where R <: Real`: Trajectory data.
@@ -333,7 +320,7 @@ function NamedTrajectory(
         traj.final,
         traj.goal,
         traj.components,
-        traj.params,
+        traj.global_data,
         traj.names,
         traj.state_names,
         traj.control_names
@@ -371,7 +358,7 @@ function NamedTrajectory(
         traj.final,
         traj.goal,
         traj.components,
-        traj.params,
+        traj.global_data,
         traj.names,
         traj.state_names,
         traj.control_names
@@ -400,7 +387,7 @@ function NamedTrajectory(
 end
 
 """
-    NamedTrajectory(comp_data; controls=(), timestep=nothing, bounds, initial, final, goal)
+    NamedTrajectory(component_data; controls=(), timestep=nothing, bounds, initial, final, goal)
 
     # Arguments
     - `comps::NamedTuple{names, <:Tuple{Vararg{AbstractMatrix{R}}}} where {names}`: components data.
@@ -427,7 +414,7 @@ function NamedTrajectory(
     initial = NamedTuple([(k => traj.initial[k]) for k ∈ keys(comps) if k ∈ keys(traj.initial)])
     final = NamedTuple([(k => traj.final[k]) for k ∈ keys(comps) if k ∈ keys(traj.final)])
     goal = NamedTuple([(k => traj.goal[k]) for k ∈ keys(comps) if k ∈ keys(traj.goal)])
-    params = NamedTuple([(k => traj.params[k]) for k ∈ keys(comps) if k ∈ keys(traj.params)])
+    params = NamedTuple([(k => traj.global_data[k]) for k ∈ keys(comps) if k ∈ keys(traj.global_data)])
 
     return NamedTrajectory(
         comps;
