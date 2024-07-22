@@ -163,7 +163,8 @@ function NamedTrajectory(
     running_global_dim = 0
     for (k, v) ∈ global_dims_pairs
         # offset by datavec
-        push!(global_comps_pairs, k => (dim * T + running_global_dim) .+ 1:v)
+        k_value = (dim * T + running_global_dim) .+ (1:v)
+        push!(global_comps_pairs, k => k_value)
         running_global_dim += v
     end
 
