@@ -25,6 +25,8 @@ mutable struct NamedTrajectory{R <: Real}
     components::NamedTuple{cnames, <:Tuple{Vararg{AbstractVector{Int}}}} where cnames
     global_data::NamedTuple{pnames, <:Tuple{Vararg{AbstractVector{R}}}} where pnames
     global_dim::Int
+    global_dims::NamedTuple{gdnames, <:Tuple{Vararg{Int}}} where gdnames
+    global_components::NamedTuple{gcnames, <:Tuple{Vararg{AbstractVector{Int}}}} where gcnames
     names::Tuple{Vararg{Symbol}}
     state_names::Tuple{Vararg{Symbol}}
     control_names::Tuple{Vararg{Symbol}}
@@ -112,15 +114,13 @@ function NamedTrajectory(
     data = vcat([val for (key, val) ∈ component_data_pairs]...)
     dim, T = size(data)
 
-    # do this to store data matrix as view of datavec
+    # store data matrix as view of datavec
     datavec = vec(data)
-
     data = reshape(view(datavec, :), :, T)
 
     dims_pairs = [(k => size(v, 1)) for (k, v) ∈ component_data_pairs]
 
     dims_tuple = NamedTuple(dims_pairs)
-
     @assert all([length(bounds[k][1]) == dims_tuple[k] for k ∈ keys(bounds)])
     @assert all([length(initial[k]) == dims_tuple[k] for k ∈ keys(initial)])
     @assert all([length(final[k]) == dims_tuple[k] for k ∈ keys(final)])
@@ -156,8 +156,20 @@ function NamedTrajectory(
     comps = NamedTuple(comp_pairs)
 
     # global dims
+
+    global_dims_pairs = [(k => length(v)) for (k, v) ∈ pairs(global_data)]
+    global_comps_pairs::Vector{Pair{Symbol, AbstractVector{Int}}} = []
     
-    global_dim = sum([length(v) for v ∈ values(global_data)])
+    running_global_dim = 0
+    for (k, v) ∈ global_dims_pairs
+        # offset by datavec
+        push!(global_comps_pairs, k => (dim * T + running_global_dim) .+ 1:v)
+        running_global_dim += v
+    end
+
+    global_comps = NamedTuple(global_comps_pairs)
+    global_dims = NamedTuple(global_dims_pairs)
+    global_dim = sum(values(global_dims))
 
     return NamedTrajectory{R}(
         data,
@@ -173,6 +185,8 @@ function NamedTrajectory(
         comps,
         global_data,
         global_dim,
+        global_dims,
+        global_comps,
         names,
         state_names,
         controls
@@ -190,11 +204,11 @@ function NamedTrajectory(
     component_data::NamedTuple;
     kwargs...
 )
-    @assert all([v isa AbstractMatrix || v isa AbstractVector for v ∈ values(comps)])
-    @assert all([eltype(v) <: Real for v ∈ values(comps)]) "eltypes are $([eltype(v) for v ∈ values(comps)])"
-    vals = [v isa AbstractVector ? reshape(v, 1, :) : v for v ∈ values(comps)]
-    comps = NamedTuple([(k => v) for (k, v) ∈ zip(keys(comps), vals)])
-    return NamedTrajectory(comps; kwargs...)
+    @assert all([v isa AbstractMatrix || v isa AbstractVector for v ∈ values(component_data)])
+    @assert all([eltype(v) <: Real for v ∈ values(component_data)]) "eltypes are $([eltype(v) for v ∈ values(component_data)])"
+    vals = [v isa AbstractVector ? reshape(v, 1, :) : v for v ∈ values(component_data)]
+    component_data = NamedTuple([(k => v) for (k, v) ∈ zip(keys(component_data), vals)])
+    return NamedTrajectory(component_data; kwargs...)
 end
 
 
@@ -278,7 +292,19 @@ function NamedTrajectory(
 
     # global dims
     
-    global_dim = sum([length(v) for v ∈ values(global_data)])
+    global_dims_pairs = [(k => length(v)) for (k, v) ∈ pairs(global_data)]
+    global_comps_pairs::Vector{Pair{Symbol, AbstractVector{Int}}} = []
+    
+    running_global_dim = 0
+    for (k, v) ∈ global_dims_pairs
+        # offset by datavec
+        push!(global_comps_pairs, k => (dim * T + running_global_dim) .+ 1:v)
+        running_global_dim += v
+    end
+
+    global_comps = NamedTuple(global_comps_pairs)
+    global_dims = NamedTuple(global_dims_pairs)
+    global_dim = sum(values(global_dims))
 
     return NamedTrajectory{R}(
         data,
@@ -294,6 +320,8 @@ function NamedTrajectory(
         components,
         global_data,
         global_dim,
+        global_dims,
+        global_comps,
         names,
         state_names,
         controls
@@ -311,7 +339,22 @@ function NamedTrajectory(
     datavec::AbstractVector{R},
     traj::NamedTrajectory
 ) where R <: Real
+    return NamedTrajectory(
+        datavec,
+        traj.global_data,
+        traj
+    )
+end
+
+function NamedTrajectory(
+    datavec::AbstractVector{R},
+    global_data::NamedTuple{pnames, <:Tuple{Vararg{AbstractVector{R}}}} where pnames,
+    traj::NamedTrajectory
+) where R <: Real
     @assert length(datavec) == length(traj.datavec)
+    for (k, v) ∈ pairs(global_data)
+        @assert length(v) == traj.global_dims[k] "$k: $(length(v)) != $(traj.global_dims[k])"
+    end
 
     # collecting here to prevent overlapping views
     # TODO: is this necessary?
@@ -331,8 +374,10 @@ function NamedTrajectory(
         traj.final,
         traj.goal,
         traj.components,
-        traj.global_data,
+        global_data,
         traj.global_dim,
+        traj.global_dims,
+        traj.global_components,
         traj.names,
         traj.state_names,
         traj.control_names
@@ -372,6 +417,8 @@ function NamedTrajectory(
         traj.components,
         traj.global_data,
         traj.global_dim,
+        traj.global_dims,
+        traj.global_components,
         traj.names,
         traj.state_names,
         traj.control_names
@@ -437,7 +484,7 @@ function NamedTrajectory(
         initial=initial,
         final=final,
         goal=goal,
-        global_data
+        global_data=global_data,
     )
 
 end
