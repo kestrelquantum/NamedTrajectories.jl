@@ -170,7 +170,7 @@ function NamedTrajectory(
 
     global_comps = NamedTuple(global_comps_pairs)
     global_dims = NamedTuple(global_dims_pairs)
-    global_dim = sum(values(global_dims))
+    global_dim = sum(values(global_dims), init=0)
 
     return NamedTrajectory{R}(
         data,
@@ -305,7 +305,7 @@ function NamedTrajectory(
 
     global_comps = NamedTuple(global_comps_pairs)
     global_dims = NamedTuple(global_dims_pairs)
-    global_dim = sum(values(global_dims))
+    global_dim = sum(values(global_dims), init=0)
 
     return NamedTrajectory{R}(
         data,
