@@ -95,6 +95,8 @@ get_components(traj::NamedTrajectory) = get_components(traj.names, traj)
     add_component!(traj, name::Symbol, data::AbstractVecOrMat; type={:state, :control})
 
 Add a component to the trajectory.
+
+NOTE: This function resizes the trajectory, so global components and components must be adjusted.
 """
 function add_component!(
     traj::NamedTrajectory,
@@ -172,6 +174,15 @@ function add_component!(
     traj.data = vcat(traj.data, data)
 
     traj.datavec = vec(view(traj.data, :, :))
+
+    # update global data
+
+    global_comps_pairs::Vector{Pair{Symbol, AbstractVector{Int}}} = []
+    for (k, v) ∈ pairs(traj.global_components)
+        # increase offset for new components
+        push!(global_comps_pairs, k => v .+ dim * traj.T)
+    end
+    traj.global_components = NamedTuple(global_comps_pairs)
 
     return nothing
 end
