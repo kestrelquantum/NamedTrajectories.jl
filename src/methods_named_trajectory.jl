@@ -37,6 +37,16 @@ end
 
 
 """
+    length(::NamedTrajectory)
+
+Returns the length of all variables of the trajectory.
+"""
+function Base.length(Z::NamedTrajectory)
+    return Z.dim * Z.T + Z.global_dim
+end
+
+
+"""
     copy(::NamedTrajectory)
 
 Returns a copy of the trajectory.
