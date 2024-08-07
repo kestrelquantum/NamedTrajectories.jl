@@ -8,6 +8,53 @@ using OrderedCollections
 
 const BoundType = Tuple{AbstractVector{<:Real}, AbstractVector{<:Real}}
 
+function inspect_names(
+    names::Tuple{Vararg{Symbol}},
+    controls::Tuple{Vararg{Symbol}},
+    initial::Tuple{Vararg{Symbol}},
+    final::Tuple{Vararg{Symbol}},
+    goal::Tuple{Vararg{Symbol}},
+    bounds::Tuple{Vararg{Symbol}},
+)
+    for k ∈ controls
+        @assert k ∈ names "Control $k not in component_data"
+    end
+    for k ∈ initial
+        @assert k ∈ names "Initial $k not in component_data"
+    end
+    for k ∈ final
+        @assert k ∈ names "Final $k not in component_data"
+    end
+    for k ∈ goal
+        @assert k ∈ names "Goal $k not in component_data"
+    end
+    for k ∈ bounds
+        @assert k ∈ names "Bound $k not in component_data"
+    end
+end
+
+function inspect_dims_pairs(
+    dims_pairs::Vector{Pair{Symbol, Int}},
+    bounds::NamedTuple{bnames, <:Tuple{Vararg{BoundType}}} where bnames,
+    initial::NamedTuple{inames, <:Tuple{Vararg{AbstractVector{R}}}} where inames,
+    final::NamedTuple{fnames, <:Tuple{Vararg{AbstractVector{R}}}} where fnames,
+    goal::NamedTuple{gnames, <:Tuple{Vararg{AbstractVector{R}}}} where gnames
+) where R <: Real
+    dims_tuple = NamedTuple(dims_pairs)
+    for k in keys(bounds)
+        @assert length(bounds[k][1]) == dims_tuple[k] "Bad bound for $k: ||$(bounds[k])|| ≠ $(dims_tuple[k])"
+    end
+    for k in keys(initial)
+        @assert length(initial[k]) == dims_tuple[k] "Bad initial for $k: ||$(initial[k])|| ≠ $(dims_tuple[k])"
+    end
+    for k in keys(final)
+        @assert length(final[k]) == dims_tuple[k] "Bad final for $k: ||$(final[k])|| ≠ $(dims_tuple[k])"
+    end
+    for k in keys(goal)
+        @assert length(goal[k]) == dims_tuple[k] "Bad goal for ||$k: $(goal[k])|| ≠ $(dims_tuple[k])"
+    end
+end
+
 """
     NamedTrajectory constructor
 """
@@ -61,13 +108,9 @@ function NamedTrajectory(
     @assert !isnothing(timestep)
     @assert timestep isa Symbol && timestep ∈ keys(component_data) ||
         timestep isa Real "timestep $(timestep)::$(typeof(timestep)) must be a symbol or real"
-
-    @assert all([k ∈ keys(component_data) for k ∈ controls])
-    @assert all([k ∈ keys(component_data) for k ∈ keys(initial)])
-    @assert all([k ∈ keys(component_data) for k ∈ keys(final)])
-    @assert all([k ∈ keys(component_data) for k ∈ keys(goal)])
-
-    @assert all([k ∈ keys(component_data) for k ∈ keys(bounds)])
+    
+    names = Tuple(keys(component_data))
+    inspect_names(names, controls, keys(initial), keys(final), keys(goal), keys(bounds))
 
     @assert all([
         bound isa Real ||
@@ -81,7 +124,6 @@ function NamedTrajectory(
         controls = (controls..., timestep)
     end
 
-    names = Tuple(keys(component_data))
 
     state_names = Tuple(k for k ∈ names if k ∉ controls)
 
@@ -119,12 +161,7 @@ function NamedTrajectory(
     data = reshape(view(datavec, :), :, T)
 
     dims_pairs = [(k => size(v, 1)) for (k, v) ∈ component_data_pairs]
-
-    dims_tuple = NamedTuple(dims_pairs)
-    @assert all([length(bounds[k][1]) == dims_tuple[k] for k ∈ keys(bounds)])
-    @assert all([length(initial[k]) == dims_tuple[k] for k ∈ keys(initial)])
-    @assert all([length(final[k]) == dims_tuple[k] for k ∈ keys(final)])
-    @assert all([length(goal[k]) == dims_tuple[k] for k ∈ keys(goal)])
+    inspect_dims_pairs(dims_pairs, bounds, initial, final, goal)
 
     comp_pairs::Vector{Pair{Symbol, AbstractVector{Int}}} =
         [(dims_pairs[1][1] => 1:dims_pairs[1][2])]
@@ -241,12 +278,9 @@ function NamedTrajectory(
     @assert timestep isa Symbol && timestep ∈ keys(components) ||
         timestep isa Real
 
-    @assert all([k ∈ keys(components) for k ∈ controls])
-    @assert all([k ∈ keys(components) for k ∈ keys(initial)])
-    @assert all([k ∈ keys(components) for k ∈ keys(final)])
-    @assert all([k ∈ keys(components) for k ∈ keys(goal)])
+    names = Tuple(keys(components))
+    inspect_names(names, controls, keys(initial), keys(final), keys(goal), keys(bounds))
 
-    @assert all([k ∈ keys(components) for k ∈ keys(bounds)])
     @assert all([
         (bound isa Real) ||
         (bound isa AbstractVector{<:Real}) ||
@@ -273,6 +307,7 @@ function NamedTrajectory(
     @assert vcat([components[k] for k in keys(components)]...) == 1:dim
 
     dim_pairs = [(k => length(components[k])) for k in keys(components)]
+    inspect_dims_pairs(dims_pairs, bounds, initial, final, goal)
 
     dim_states = sum([dim for (k, dim) ∈ dim_pairs if k ∉ controls])
     dim_controls = sum([dim for (k, dim) ∈ dim_pairs if k ∈ controls])
@@ -281,13 +316,6 @@ function NamedTrajectory(
     push!(dim_pairs, :controls => dim_controls)
 
     dims = NamedTuple(dim_pairs)
-
-    @assert all([length(bounds[k][1]) == dims[k] for k in keys(bounds)])
-    @assert all([length(initial[k]) == dims[k] for k in keys(initial)])
-    @assert all([length(final[k]) == dims[k] for k in keys(final)])
-    @assert all([length(goal[k]) == dims[k] for k in keys(goal)])
-
-    names = Tuple(keys(components))
 
     state_names = Tuple(k for k ∈ names if k ∉ controls)
 
