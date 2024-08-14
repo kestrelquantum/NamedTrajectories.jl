@@ -27,4 +27,4 @@ params = (
 )
 
 # we can now create a `NamedTrajectory` object with parameters specification.
-traj = NamedTrajectory(components; timestep=timestep, controls=control, params=params)
+traj = NamedTrajectory(components; timestep=timestep, controls=control, global_data=params)
