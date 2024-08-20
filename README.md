@@ -8,13 +8,13 @@
 
 | **Documentation** | **Build Status** | **Support** |
 |:-----------------:|:----------------:| :----------:|
-| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://aarontrowbridge.github.io/NamedTrajectories.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://aarontrowbridge.github.io/NamedTrajectories.jl/dev/) | [![Build Status](https://github.com/aarontrowbridge/NamedTrajectories.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/aarontrowbridge/NamedTrajectories.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl)| [![Unitary Fund](https://img.shields.io/badge/Supported%20By-Unitary%20Fund-FFFF00.svg)](https://unitary.fund)
+| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://kestrelquantum.github.io/NamedTrajectories.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://kestrelquantum.github.io/NamedTrajectories.jl/dev/) | [![Build Status](https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl)| [![Unitary Fund](https://img.shields.io/badge/Supported%20By-Unitary%20Fund-FFFF00.svg)](https://unitary.fund)
 
 </div>
 
-**NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with [QuantumCollocation.jl](https://github.com/aarontrowbridge/QuantumCollocation.jl) and [Piccolo.jl](https://github.com/aarontrowbridge/Piccolo.jl).
+**NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with [QuantumCollocation.jl](https://github.com/kestrelquantum/QuantumCollocation.jl) and [Piccolo.jl](https://github.com/kestrelquantum/Piccolo.jl).
 
-Please see the `dev` [documentation](https://aarontrowbridge.github.io/NamedTrajectories.jl/dev/) for more information.
+Please see the `dev` [documentation](https://kestrelquantum.github.io/NamedTrajectories.jl/dev/) for more information.
 
 ## Installation
 
