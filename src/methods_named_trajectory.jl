@@ -13,6 +13,7 @@ export get_timesteps
 export get_duration
 
 using OrderedCollections
+using TestItemRunner
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint
@@ -87,9 +88,9 @@ function Base.setproperty!(traj::NamedTrajectory, symb::Symbol, val::Any)
     end
 end
 
-# -------------------------------------------------------------- # 
+# -------------------------------------------------------------- #
 # Base operations
-# -------------------------------------------------------------- # 
+# -------------------------------------------------------------- #
 
 """
     vec(::NamedTrajectory)
@@ -320,8 +321,8 @@ end
 Remove a component from the trajectory.
 """
 function remove_component(
-    traj::NamedTrajectory, 
-    name::Symbol; 
+    traj::NamedTrajectory,
+    name::Symbol;
     new_control_name::Union{Nothing, Symbol}=nothing,
     new_control_names::Union{Nothing, Tuple{Vararg{Symbol}}}=nothing
 )
@@ -346,7 +347,7 @@ function remove_components(
 )
     @assert all([n ∈ traj.names for n ∈ names])
     @assert isnothing(new_control_name) || isnothing(new_control_names) "Conflicting new control names provided"
-    new_control_names = isnothing(new_control_names) ? () : new_control_names    
+    new_control_names = isnothing(new_control_names) ? () : new_control_names
     new_control_names = isnothing(new_control_name) ? (new_control_names...,) : (new_control_name,)
     @assert isnothing(new_control_names) || all([n ∈ traj.names && n ∉ names for n ∈ new_control_names]) "New control names must be valid components"
 
@@ -373,6 +374,19 @@ function update!(traj::NamedTrajectory, name::Symbol, data::AbstractMatrix{Float
     traj.datavec = vec(view(traj.data, :, :))
     return nothing
 end
+
+"""
+    update!(traj, datavec::AbstractVector{Float64})
+
+Update the trajectory with a new datavec.
+"""
+function update!(traj::NamedTrajectory, datavec::AbstractVector{Float64})
+    @assert length(datavec) == traj.dim * traj.T + traj.global_dim
+    traj.datavec = datavec
+    traj.data = reshape(view(datavec, :), traj.dim, traj.T)
+    return nothing
+end
+
 
 """
     update_bound!(traj, name::Symbol, data::Real)
@@ -458,5 +472,13 @@ function get_duration(traj::NamedTrajectory)
     return get_times(traj)[end]
 end
 
+@testitem "Testing Methods" begin
+    Z = NamedTrajectory((x=rand(2, 5), y=rand(1,5)), controls=:y, timestep=1.0)
+    data_original = deepcopy(Z.data)
+    datavec_new = rand(length(Z.datavec))
+    update!(Z, datavec_new)
+    @test Z.datavec == datavec_new
+    @test vec(Z.data) == datavec_new
+end
 
 end
