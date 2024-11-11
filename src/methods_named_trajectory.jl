@@ -13,6 +13,7 @@ export get_timesteps
 export get_duration
 
 using OrderedCollections
+using TestItemRunner
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint
@@ -458,5 +459,212 @@ function get_duration(traj::NamedTrajectory)
     return get_times(traj)[end]
 end
 
+# =========================================================================== #
+
+@testitem "knot point methods" begin
+    include("../test/test_utils.jl")
+    fixed_time_traj = get_fixed_time_traj()
+    free_time_traj = get_free_time_traj()
+
+    # freetime
+    @test free_time_traj[1] isa KnotPoint
+    @test free_time_traj[1].x == free_time_traj.x[:, 1]
+    @test free_time_traj[end] isa KnotPoint
+    @test free_time_traj[end].x == free_time_traj.x[:, end]
+    @test free_time_traj[:x] == free_time_traj.x
+    @test free_time_traj.timestep isa Symbol
+
+    # fixed time
+    @test fixed_time_traj[1] isa KnotPoint
+    @test fixed_time_traj[1].x == fixed_time_traj.x[:, 1]
+    @test fixed_time_traj[end] isa KnotPoint
+    @test fixed_time_traj[end].x == fixed_time_traj.x[:, end]
+    @test fixed_time_traj[:x] == fixed_time_traj.x
+    @test fixed_time_traj.timestep isa Float64
+end
+
+@testitem "algebraic methods" begin
+    include("../test/test_utils.jl")
+    fixed_time_traj = get_fixed_time_traj()
+    free_time_traj = get_free_time_traj()
+    free_time_traj2 = copy(free_time_traj)
+    fixed_time_traj2 = copy(fixed_time_traj)
+
+    @test (free_time_traj + free_time_traj2).x == free_time_traj.x + free_time_traj2.x
+    @test (fixed_time_traj + fixed_time_traj2).x == fixed_time_traj.x + fixed_time_traj2.x
+
+    @test (free_time_traj - free_time_traj2).x == free_time_traj.x - free_time_traj2.x
+    @test (fixed_time_traj - fixed_time_traj2).x == fixed_time_traj.x - fixed_time_traj2.x
+
+    @test (2.0 * free_time_traj).x == (free_time_traj * 2.0).x == free_time_traj.x * 2.0
+    @test (2.0 * fixed_time_traj).x == (fixed_time_traj * 2.0).x == fixed_time_traj.x * 2.0
+end
+
+@testitem "copying and equality checks" begin
+    include("../test/test_utils.jl")
+    fixed_time_traj = get_fixed_time_traj()
+    free_time_traj = get_free_time_traj()
+
+    fixed_time_traj_copy = copy(fixed_time_traj)
+    free_time_traj_copy = copy(free_time_traj)
+
+    @test isequal(fixed_time_traj, fixed_time_traj_copy)
+    @test fixed_time_traj == fixed_time_traj_copy
+end
+
+@testitem "adding and removing state matrix and vector component" begin
+    include("../test/test_utils.jl")
+    T = 5
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    free_time_traj = get_free_time_traj(T=T)
+    
+    # adding state matrix component
+    name = :z
+    data = rand(2, T)
+    type = :state
+    
+    # case: fixed time
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test fixed_time_traj.z ≈ data
+    @test name ∈ fixed_time_traj.names
+
+    # case: free time
+    add_component!(free_time_traj, name, data; type=type)
+    @test free_time_traj.z ≈ data
+    @test name ∈ free_time_traj.names
+
+    # adding state vector component
+    name = :y
+    data = rand(T)
+    type = :state
+
+    # case: fixed time
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test vec(fixed_time_traj.y) ≈ vec(data)
+    @test name ∈ fixed_time_traj.names
+    
+    # case: free time
+    add_component!(free_time_traj, name, data; type=type)
+    @test vec(free_time_traj.y) ≈ vec(data)
+    @test name ∈ free_time_traj.names
+
+    # removing state components
+    names = [:z, :y]
+
+    # case: fixed time
+    fixed_time_traj = remove_components(fixed_time_traj, names)
+    @test all(name ∉ fixed_time_traj.names for name in names)
+
+    # case: free time
+    free_time_traj = remove_components(free_time_traj, names)
+    @test all(name ∉ free_time_traj.names for name in names)
+end
+
+@testitem "adding and removing control matrix component" begin
+    include("../test/test_utils.jl")
+    T = 5
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    free_time_traj = get_free_time_traj(T=T)
+
+    # testing adding control component
+    name = :a
+    data = rand(2, T)
+    type = :control
+
+    # case: fixed time
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test fixed_time_traj.a ≈ data
+    @test name ∈ fixed_time_traj.names
+    @test name ∈ fixed_time_traj.control_names
+
+    # case: free time
+    add_component!(free_time_traj, name, data; type=type)
+    @test free_time_traj.a ≈ data
+    @test name ∈ free_time_traj.names
+    @test name ∈ free_time_traj.control_names
+
+    # testing removing control component
+    name = :a
+
+    # case: fixed time
+    fixed_time_traj = remove_component(fixed_time_traj, name)
+    @test name ∉ fixed_time_traj.names
+    @test name ∉ fixed_time_traj.control_names
+
+    # case: free time
+    free_time_traj = remove_component(free_time_traj, name)
+    @test name ∉ free_time_traj.names
+    @test name ∉ free_time_traj.control_names
+end
+
+@testitem "adding control vector component" begin
+    include("../test/test_utils.jl")
+    T = 5
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    free_time_traj = get_free_time_traj(T=T)
+
+    # testing adding control vector component
+    name = :b
+    data = rand(T)
+    type = :control
+
+    # case: fixed time
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test vec(fixed_time_traj.b) ≈ vec(data)
+    @test name ∈ fixed_time_traj.names
+    @test name ∈ fixed_time_traj.control_names
+
+    # case: free time
+    add_component!(free_time_traj, name, data; type=type)
+    @test vec(free_time_traj.b) ≈ vec(data)
+    @test name ∈ free_time_traj.names
+    @test name ∈ free_time_traj.control_names
+end
+
+@testitem "updating trajectory data" begin
+    include("../test/test_utils.jl")
+    T = 5
+    x_dim = 3
+    fixed_time_traj = get_fixed_time_traj(T=T, x_dim=x_dim)
+    free_time_traj = get_free_time_traj(T=T, x_dim=x_dim)
+
+    name = :x
+    data = rand(x_dim, T)
+
+    # case: fixed time
+    update!(fixed_time_traj, name, data)
+    @test fixed_time_traj.x == data
+
+    # case: free time
+    update!(free_time_traj, name, data)
+    @test free_time_traj.x == data
+end
+
+@testitem "returning times" begin
+    include("../test/test_utils.jl")
+    T = 5
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    free_time_traj = get_free_time_traj(T=T)
+
+    # case: free time
+    @test get_times(free_time_traj) ≈ [0.0, cumsum(vec(free_time_traj.Δt))[1:end-1]...]
+
+    # case: fixed time
+    @test get_times(fixed_time_traj) ≈ 0.1 .* [0:T-1...]
+end
+
+@testitem "returning times" begin
+    include("../test/test_utils.jl")
+    T = 5
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    free_time_traj = get_free_time_traj(T=T)
+
+    # @test size(fixed_time_traj) == (
+    #     dim = sum(fixed_time_traj.dims[fixed_time_traj.names]), T = T
+    # )
+    # @test size(free_time_traj) == (
+    #     dim = sum(free_time_traj.dims[free_time_traj.names]), T = T
+    # )
+end
 
 end

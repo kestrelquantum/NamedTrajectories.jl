@@ -7,6 +7,7 @@ import CairoMakie: plot
 using CairoMakie
 using LaTeXStrings
 using OrderedCollections
+using TestItemRunner
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint
@@ -396,6 +397,22 @@ function plot(path::String, traj::NamedTrajectory, comps=traj.names; kwargs...)
         mkdir(dirname(path))
     end
     save(path, plot(traj, comps; kwargs...))
+end
+
+# =========================================================================== #
+
+@testitem "testing plotting" begin
+
+    plot_path = joinpath(@__DIR__, "test.pdf")
+
+    traj = rand(NamedTrajectory, 5)
+
+    plot(plot_path, traj)
+
+    @test isfile(plot_path)
+
+    rm(plot_path)
+
 end
 
 end

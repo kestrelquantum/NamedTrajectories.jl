@@ -1,8 +1,6 @@
-using NamedTrajectories
 using Test
+using TestItemRunner
 
-@testset "NamedTrajectories.jl" begin
-    include("test_methods.jl")
-    include("test_random.jl")
-    include("test_plotting.jl")
-end
+# Run all testitem tests in package
+@run_package_tests
+
