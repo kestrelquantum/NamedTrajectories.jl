@@ -98,6 +98,8 @@ function plot(
     titlesize::Int=25,
     markersize=5,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
+    xlims::Union{Nothing, Tuple{Real, Real}}=nothing,
+    plot_ylims::Union{NamedTuple, Tuple{Real, Real}} =(nothing, nothing),
 
     # ---------------------------------------------------------------------------
     # CairoMakie.series! keyword arguments
@@ -171,13 +173,25 @@ function plot(
                 # apply transformation fⱼ to each column of data
                 transformed_data = mapslices(fⱼ, data; dims=1)
 
+                # ylims
+                if plot_ylims isa Tuple
+                    ylims = plot_ylims
+                else
+                    if haskey(plot_ylims, name)
+                        ylims = plot_ylims[name]
+                    else
+                        ylims = (nothing, nothing)
+                    end
+                end
+
                 # create axis for transformed data
                 ax = Axis(
                     fig[ax_count + 1, 1];
 
                     title= isnothing(transformation_titles) ? latexstring(name, "(t)", "\\text{ transformation } $j") : transformation_titles[name][j],
                     titlesize=titlesize,
-                    xlabel=L"t"
+                    xlabel=L"t",
+                    limits =(xlims, ylims)
                 )
 
                 # plot transformed data
@@ -233,13 +247,25 @@ function plot(
                 end
             end
 
+            # ylims
+            if plot_ylims isa Tuple
+                ylims = plot_ylims
+            else
+                if haskey(plot_ylims, name)
+                    ylims = plot_ylims[name]
+                else
+                    ylims = (nothing, nothing)
+                end
+            end
+
             # create axis for transformed data
             ax = Axis(
                 fig[ax_count + 1, :];
                 title = isnothing(transformation_titles)
                 ? latexstring(name, "(t)", "\\text{ transformation}") : transformation_titles[name],
                 titlesize=titlesize,
-                xlabel=L"t"
+                xlabel=L"t",
+                limits=(xlims, ylims)
             )
 
             # plot transformed data
@@ -283,13 +309,21 @@ function plot(
         end
     end
 
+    
     # create shared axis for data
     if merge_components
+        # ylims
+        if plot_ylims isa Tuple
+            ylims = plot_ylims
+        else
+            throw(ArgumentError("plot_ylims must be a tuple if merge_components is true"))
+        end
         ax = Axis(
             fig[ax_count + 1, 1];
             title=latexstring("Trajectory"),
             titlesize=titlesize,
-            xlabel=L"t"
+            xlabel=L"t",
+            limits=(xlims, ylims)
         )
     end
 
@@ -302,14 +336,26 @@ function plot(
 
         # data matrix for name componenent of trajectory
         data = traj[name]
-
+        
         # create axis for data
         if !merge_components
+            # ylims
+            if plot_ylims isa Tuple
+                ylims = plot_ylims
+            else
+                if haskey(plot_ylims, name)
+                    ylims = plot_ylims[name]
+                else
+                    ylims = (nothing, nothing)
+                end
+            end
+
             ax = Axis(
                 fig[ax_count + 1, 1];
                 title=latexstring(name, "(t)"),
                 titlesize=titlesize,
-                xlabel=L"t"
+                xlabel=L"t",
+                limits =(xlims, ylims)
             )
         end
 
