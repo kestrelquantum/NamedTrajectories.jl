@@ -7,6 +7,7 @@ import CairoMakie: plot
 using CairoMakie
 using LaTeXStrings
 using OrderedCollections
+using TestItemRunner
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint
@@ -56,6 +57,7 @@ function plot(
     ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}}=(),
     ignore_timestep::Bool=true,
     merge_components::Bool=false,
+    use_latex::Bool=true,
 
     # ---------------------------------------------------------------------------
     # transformation keyword arguments
@@ -98,12 +100,17 @@ function plot(
     titlesize::Int=25,
     markersize=5,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
+    xlims::Union{Nothing, Tuple{Real, Real}}=nothing,
+    ylims::Union{Nothing, NamedTuple, Tuple{Real, Real}}=nothing,
 
     # ---------------------------------------------------------------------------
     # CairoMakie.series! keyword arguments
     # ---------------------------------------------------------------------------
     kwargs...
 )
+    # set up parse function
+    parse = use_latex ? latexstring : string
+
     # convert single symbol to vector: comps
     if comps isa Symbol
         comps = [comps]
@@ -171,13 +178,28 @@ function plot(
                 # apply transformation fⱼ to each column of data
                 transformed_data = mapslices(fⱼ, data; dims=1)
 
+                # ylims
+                if ylims isa NamedTuple
+                    if haskey(ylims, name)
+                        ylims = ylims[name]
+                    else
+                        ylims = (nothing, nothing)
+                    end
+                end
+
+                if isnothing(transformation_titles)
+                    title = parse(name, "(t)", "\\text{ transformation } $j")
+                else
+                    title = transformation_titles[name][j]
+                end
+
                 # create axis for transformed data
                 ax = Axis(
                     fig[ax_count + 1, 1];
-
-                    title= isnothing(transformation_titles) ? latexstring(name, "(t)", "\\text{ transformation } $j") : transformation_titles[name][j],
+                    title=title,
                     titlesize=titlesize,
-                    xlabel=L"t"
+                    xlabel=L"t",
+                    limits =(xlims, ylims)
                 )
 
                 # plot transformed data
@@ -187,7 +209,7 @@ function plot(
                         labels = string.(1:size(transformed_data, 2))
                     else
                         labels = [
-                            latexstring(transformation_labels[name][j], "_{$i}")
+                            parse(transformation_labels[name][j], "_{$i}")
                                 for i = 1:size(transformed_data, 2)
                         ]
                     end
@@ -224,22 +246,37 @@ function plot(
             transformed_data = mapslices(f, data; dims=1)
 
             if isnothing(transformation_titles)
-                title = latexstring(name, "(t)", "\\text{ transformation}")
+                title = parse(name, "(t)", "\\text{ transformation}")
             else
                 if isnothing(transformation_titles[name])
-                    title = latexstring(name, "(t)", "\\text{ transformation}")
+                    title = parse(name, "(t)", "\\text{ transformation}")
                 else
                     title = transformation_titles[name]
                 end
             end
 
+            # ylims
+            if ylims isa NamedTuple
+                if haskey(ylims, name)
+                    ylims = ylims[name]
+                else
+                    ylims = (nothing, nothing)
+                end
+            end
+
+            if isnothing(transformation_titles)
+                title = parse(name, "(t)", "\\text{ transformation}")
+            else
+                title = transformation_titles[name]
+            end
+
             # create axis for transformed data
             ax = Axis(
                 fig[ax_count + 1, :];
-                title = isnothing(transformation_titles)
-                ? latexstring(name, "(t)", "\\text{ transformation}") : transformation_titles[name],
+                title=title,
                 titlesize=titlesize,
-                xlabel=L"t"
+                xlabel=L"t",
+                limits=(xlims, ylims)
             )
 
             # plot transformed data
@@ -247,12 +284,12 @@ function plot(
 
                 if isnothing(transformation_labels[name])
                     labels = [
-                        latexstring(name, "_{$i}")
+                        parse(name, "_{$i}")
                             for i = 1:size(transformed_data, 2)
                     ]
                 else
                     labels = [
-                        latexstring(transformation_labels[name], "_{$i}")
+                        parse(transformation_labels[name], "_{$i}")
                             for i = 1:size(transformed_data, 2)
                     ]
                 end
@@ -282,14 +319,19 @@ function plot(
             ax_count += 1
         end
     end
-
+    
     # create shared axis for data
     if merge_components
+        # ylims
+        if ylims isa NamedTuple
+            throw(ArgumentError("plot_ylims must be a tuple if merge_components is true"))
+        end
         ax = Axis(
             fig[ax_count + 1, 1];
-            title=latexstring("Trajectory"),
+            title=parse("Trajectory"),
             titlesize=titlesize,
-            xlabel=L"t"
+            xlabel=L"t",
+            limits=(xlims, ylims)
         )
     end
 
@@ -302,14 +344,24 @@ function plot(
 
         # data matrix for name componenent of trajectory
         data = traj[name]
-
+        
         # create axis for data
         if !merge_components
+            # ylims
+            if ylims isa NamedTuple
+                if haskey(ylims, name)
+                    ylims = ylims[name]
+                else
+                    ylims = (nothing, nothing)
+                end
+            end
+            
             ax = Axis(
                 fig[ax_count + 1, 1];
-                title=latexstring(name, "(t)"),
+                title=parse(name, "(t)"),
                 titlesize=titlesize,
-                xlabel=L"t"
+                xlabel=L"t",
+                limits =(xlims, ylims)
             )
         end
 
@@ -317,7 +369,7 @@ function plot(
         if name ∈ ignored_labels
             labels = nothing
         else
-            labels = [latexstring(name, "_{$i}") for i = 1:size(data, 1)]
+            labels = [parse(name, "_{$i}") for i = 1:size(data, 1)]
         end
 
         # plot data
@@ -350,6 +402,40 @@ function plot(path::String, traj::NamedTrajectory, comps=traj.names; kwargs...)
         mkdir(dirname(path))
     end
     save(path, plot(traj, comps; kwargs...))
+end
+
+# =========================================================================== #
+
+@testitem "save plotting" begin
+    plot_path = joinpath(@__DIR__, "test.pdf")
+
+    traj = rand(NamedTrajectory, 5)
+
+    plot(plot_path, traj)
+
+    @test isfile(plot_path)
+
+    rm(plot_path)
+end
+
+@testitem "xlim and ylim" begin
+    using CairoMakie 
+    include("../test/test_utils.jl")
+    
+    # has x and y
+    traj = get_fixed_time_traj2()
+    @test plot(traj, xlims=(0, 5)) isa Figure
+    @test plot(traj, ylims=(x=(0, 5))) isa Figure
+    @test plot(traj, ylims=(x=(0, 5), y=(0, 5))) isa Figure
+    @test plot(traj, ylims=(0, 5)) isa Figure
+end
+
+@testitem "LaTeX strings" begin
+    using CairoMakie 
+    
+    # weird names
+    traj = NamedTrajectory((α_β_2=rand(2, 5), y_1_2=rand(1,5)), controls=:y_1_2, timestep=1.0)
+    @test plot(traj, use_latex=false) isa Figure
 end
 
 end
