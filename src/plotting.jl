@@ -100,7 +100,7 @@ function plot(
     markersize=5,
     series_color::Symbol=:glasbey_bw_minc_20_n256,
     xlims::Union{Nothing, Tuple{Real, Real}}=nothing,
-    plot_ylims::Union{NamedTuple, Tuple{Real, Real}} =(nothing, nothing),
+    ylims::Union{Nothing, NamedTuple, Tuple{Real, Real}}=nothing,
 
     # ---------------------------------------------------------------------------
     # CairoMakie.series! keyword arguments
@@ -175,11 +175,9 @@ function plot(
                 transformed_data = mapslices(fⱼ, data; dims=1)
 
                 # ylims
-                if plot_ylims isa Tuple
-                    ylims = plot_ylims
-                else
-                    if haskey(plot_ylims, name)
-                        ylims = plot_ylims[name]
+                if ylims isa NamedTuple
+                    if haskey(ylims, name)
+                        ylims = ylims[name]
                     else
                         ylims = (nothing, nothing)
                     end
@@ -249,11 +247,9 @@ function plot(
             end
 
             # ylims
-            if plot_ylims isa Tuple
-                ylims = plot_ylims
-            else
-                if haskey(plot_ylims, name)
-                    ylims = plot_ylims[name]
+            if ylims isa NamedTuple
+                if haskey(ylims, name)
+                    ylims = ylims[name]
                 else
                     ylims = (nothing, nothing)
                 end
@@ -309,14 +305,11 @@ function plot(
             ax_count += 1
         end
     end
-
     
     # create shared axis for data
     if merge_components
         # ylims
-        if plot_ylims isa Tuple
-            ylims = plot_ylims
-        else
+        if ylims isa NamedTuple
             throw(ArgumentError("plot_ylims must be a tuple if merge_components is true"))
         end
         ax = Axis(
@@ -341,16 +334,14 @@ function plot(
         # create axis for data
         if !merge_components
             # ylims
-            if plot_ylims isa Tuple
-                ylims = plot_ylims
-            else
-                if haskey(plot_ylims, name)
-                    ylims = plot_ylims[name]
+            if ylims isa NamedTuple
+                if haskey(ylims, name)
+                    ylims = ylims[name]
                 else
                     ylims = (nothing, nothing)
                 end
             end
-
+            
             ax = Axis(
                 fig[ax_count + 1, 1];
                 title=latexstring(name, "(t)"),
@@ -401,8 +392,7 @@ end
 
 # =========================================================================== #
 
-@testitem "testing plotting" begin
-
+@testitem "save plotting" begin
     plot_path = joinpath(@__DIR__, "test.pdf")
 
     traj = rand(NamedTrajectory, 5)
@@ -412,7 +402,18 @@ end
     @test isfile(plot_path)
 
     rm(plot_path)
+end
 
+@testitem "xlim and ylim" begin
+    using CairoMakie 
+    include("../test/test_utils.jl")
+    
+    # has x and y
+    traj = get_fixed_time_traj2()
+    @test plot(traj, xlims=(0, 5)) isa Figure
+    @test plot(traj, ylims=(x=(0, 5))) isa Figure
+    @test plot(traj, ylims=(x=(0, 5), y=(0, 5))) isa Figure
+    @test plot(traj, ylims=(0, 5)) isa Figure
 end
 
 end
