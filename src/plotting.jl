@@ -57,6 +57,7 @@ function plot(
     ignored_labels::Union{Symbol, Vector{Symbol}, Tuple{Vararg{Symbol}}}=(),
     ignore_timestep::Bool=true,
     merge_components::Bool=false,
+    use_latex::Bool=true,
 
     # ---------------------------------------------------------------------------
     # transformation keyword arguments
@@ -107,6 +108,9 @@ function plot(
     # ---------------------------------------------------------------------------
     kwargs...
 )
+    # set up parse function
+    parse = use_latex ? latexstring : string
+
     # convert single symbol to vector: comps
     if comps isa Symbol
         comps = [comps]
@@ -183,11 +187,16 @@ function plot(
                     end
                 end
 
+                if isnothing(transformation_titles)
+                    title = parse(name, "(t)", "\\text{ transformation } $j")
+                else
+                    title = transformation_titles[name][j]
+                end
+
                 # create axis for transformed data
                 ax = Axis(
                     fig[ax_count + 1, 1];
-
-                    title= isnothing(transformation_titles) ? latexstring(name, "(t)", "\\text{ transformation } $j") : transformation_titles[name][j],
+                    title=title,
                     titlesize=titlesize,
                     xlabel=L"t",
                     limits =(xlims, ylims)
@@ -200,7 +209,7 @@ function plot(
                         labels = string.(1:size(transformed_data, 2))
                     else
                         labels = [
-                            latexstring(transformation_labels[name][j], "_{$i}")
+                            parse(transformation_labels[name][j], "_{$i}")
                                 for i = 1:size(transformed_data, 2)
                         ]
                     end
@@ -237,10 +246,10 @@ function plot(
             transformed_data = mapslices(f, data; dims=1)
 
             if isnothing(transformation_titles)
-                title = latexstring(name, "(t)", "\\text{ transformation}")
+                title = parse(name, "(t)", "\\text{ transformation}")
             else
                 if isnothing(transformation_titles[name])
-                    title = latexstring(name, "(t)", "\\text{ transformation}")
+                    title = parse(name, "(t)", "\\text{ transformation}")
                 else
                     title = transformation_titles[name]
                 end
@@ -255,11 +264,16 @@ function plot(
                 end
             end
 
+            if isnothing(transformation_titles)
+                title = parse(name, "(t)", "\\text{ transformation}")
+            else
+                title = transformation_titles[name]
+            end
+
             # create axis for transformed data
             ax = Axis(
                 fig[ax_count + 1, :];
-                title = isnothing(transformation_titles)
-                ? latexstring(name, "(t)", "\\text{ transformation}") : transformation_titles[name],
+                title=title,
                 titlesize=titlesize,
                 xlabel=L"t",
                 limits=(xlims, ylims)
@@ -270,12 +284,12 @@ function plot(
 
                 if isnothing(transformation_labels[name])
                     labels = [
-                        latexstring(name, "_{$i}")
+                        parse(name, "_{$i}")
                             for i = 1:size(transformed_data, 2)
                     ]
                 else
                     labels = [
-                        latexstring(transformation_labels[name], "_{$i}")
+                        parse(transformation_labels[name], "_{$i}")
                             for i = 1:size(transformed_data, 2)
                     ]
                 end
@@ -314,7 +328,7 @@ function plot(
         end
         ax = Axis(
             fig[ax_count + 1, 1];
-            title=latexstring("Trajectory"),
+            title=parse("Trajectory"),
             titlesize=titlesize,
             xlabel=L"t",
             limits=(xlims, ylims)
@@ -344,7 +358,7 @@ function plot(
             
             ax = Axis(
                 fig[ax_count + 1, 1];
-                title=latexstring(name, "(t)"),
+                title=parse(name, "(t)"),
                 titlesize=titlesize,
                 xlabel=L"t",
                 limits =(xlims, ylims)
@@ -355,7 +369,7 @@ function plot(
         if name ∈ ignored_labels
             labels = nothing
         else
-            labels = [latexstring(name, "_{$i}") for i = 1:size(data, 1)]
+            labels = [parse(name, "_{$i}") for i = 1:size(data, 1)]
         end
 
         # plot data
@@ -414,6 +428,14 @@ end
     @test plot(traj, ylims=(x=(0, 5))) isa Figure
     @test plot(traj, ylims=(x=(0, 5), y=(0, 5))) isa Figure
     @test plot(traj, ylims=(0, 5)) isa Figure
+end
+
+@testitem "LaTeX strings" begin
+    using CairoMakie 
+    
+    # weird names
+    traj = NamedTrajectory((α_β_2=rand(2, 5), y_1_2=rand(1,5)), controls=:y_1_2, timestep=1.0)
+    @test plot(traj, use_latex=false) isa Figure
 end
 
 end
