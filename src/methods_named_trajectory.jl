@@ -14,7 +14,6 @@ export get_duration
 
 using OrderedCollections
 using TestItemRunner
-using TestItemRunner
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint
