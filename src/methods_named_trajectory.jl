@@ -8,6 +8,7 @@ export remove_component
 export remove_components
 export update!
 export update_bound!
+export merge
 export get_times
 export get_timesteps
 export get_duration
@@ -179,7 +180,7 @@ function Base.:-(traj1::NamedTrajectory, traj2::NamedTrajectory)
 end
 
 # -------------------------------------------------------------- #
-# Methods
+# Set/get methods
 # -------------------------------------------------------------- #
 
 """
@@ -224,7 +225,7 @@ end
 
 Add a component to the trajectory.
 
-NOTE: This function resizes the trajectory, so global components and components must be adjusted.
+This function resizes the trajectory, so global components and components must be adjusted.
 """
 function add_component!(
     traj::NamedTrajectory,
@@ -436,6 +437,165 @@ function update_bound!(traj::NamedTrajectory, name::Symbol, new_bound::BoundType
     traj.bounds = new_bounds
     return nothing
 end
+
+# -------------------------------------------------------------- #
+# Merge operations
+# -------------------------------------------------------------- #
+
+"""
+    merge(traj1::NamedTrajectory, traj2::NamedTrajectory)
+    merge(trajs::AbstractVector{<:NamedTrajectory})
+
+Returns a new NamedTrajectory object by merging `NamedTrajectory` objects. 
+
+Merge names are used to specify which components to merge by index. If no merge names are provided,
+all components are merged and name collisions are not allowed. If merge names are provided, the
+names are merged using the data from the index provided in the merge names.
+
+Joined `NamedTrajectory` objects must have the same timestep. If a free time trajectory is desired,
+setting the keyword argument `free_time=true` will construct the a component for the timestep.
+In this case, the timestep symbol must be provided. 
+
+# Arguments
+- `traj1::NamedTrajectory`: The first `NamedTrajectory` object.
+- `traj2::NamedTrajectory`: The second `NamedTrajectory` object.
+- `free_time::Bool=false`: Whether to construct a free time problem.
+- `timestep_name::Symbol=:Δt`: The timestep symbol to use for free time problems.
+- `merge_names::Union{Nothing, NamedTuple{<:Any, <:Tuple{Vararg{Int}}}}=nothing`: The names to merge by index.
+"""
+function Base.merge(traj1::NamedTrajectory, traj2::NamedTrajectory; kwargs...)
+    return merge([traj1, traj2]; kwargs...)
+end
+
+function Base.merge(
+    trajs::AbstractVector{<:NamedTrajectory};
+    free_time::Bool=false,
+    merge_names::NamedTuple{<:Any, <:Tuple{Vararg{Int}}}=(;),
+    timestep_name::Symbol=:Δt,
+    timestep_index::Int=timestep_name ∈ keys(merge_names) ? merge_names[timestep_name] : 1
+)   
+    if length(trajs) < 2
+        throw(ArgumentError("At least two trajectories must be provided"))
+    end
+
+    # check timestep index 
+    if timestep_index < 1 || timestep_index > length(trajs)
+        throw(BoundsError(trajs, timestep_index))
+    end
+
+    # organize names to drop by trajectory index
+    drop_names = map(eachindex(trajs)) do index
+        if index < 1 || index > length(trajs) 
+            throw(BoundsError(trajs, index))
+        end
+        [name for (name, keep) ∈ pairs(merge_names) if keep != index]
+    end
+
+    # collect component data
+    state_names = Vector{Symbol}[]
+    control_names = Vector{Symbol}[]
+    for (traj, names) in zip(trajs, drop_names)
+        push!(state_names, [s for s ∈ traj.state_names if s ∉ names])
+        push!(control_names, [c for c ∈ traj.control_names if c ∉ names])
+    end
+
+    # merge states and controls (separately to keep data organized)
+    state_components = merge_outer([get_components(s, t) for (s, t) ∈ zip(state_names, trajs)])
+    control_components = merge_outer([get_components(c, t) for (c, t) ∈ zip(control_names, trajs)])
+    components = merge_outer(state_components, control_components)
+    
+    # add timesteps (allow a default value, but warn if differences are detected)
+    if free_time
+        timestep = timestep_name
+        if timestep_name ∉ keys(components)
+            components = merge_outer(
+                components, 
+                NamedTuple{(timestep_name,)}([get_timesteps(trajs[timestep_index])])
+            )
+        end
+    else
+        timestep = trajs[timestep_index].timestep
+        if timestep isa Symbol
+            times = get_timesteps(trajs[timestep_index])
+            timestep = sum(times) / length(times)
+        end
+    end
+
+    # check for timestep differences (ignores all free time problems, 
+    # as they have key collision if unspecified)
+    if timestep_name ∉ keys(merge_names) && !allequal([t.timestep for t in trajs])
+        println(timestep)
+        println([t.timestep for t in trajs])
+        @warn (
+            "Automatically merging trajectories with different timesteps.\n" *
+            "To avoid this warning, specify the timestep index in merge_names."
+        )
+    end
+
+    return NamedTrajectory(
+        components,
+        controls=Tuple(c for c in merge_outer(control_names)),
+        timestep=free_time ? timestep_name : timestep,
+        bounds=merge_outer(
+            [drop(traj.bounds, names) for (traj, names) in zip(trajs, drop_names)]),
+        initial=merge_outer(
+            [drop(traj.initial, names) for (traj, names) in zip(trajs, drop_names)]),
+        final=merge_outer(
+            [drop(traj.final, names) for (traj, names) in zip(trajs, drop_names)]),
+        goal=merge_outer(
+            [drop(traj.goal, names) for (traj, names) in zip(trajs, drop_names)])
+    )
+end
+
+function drop(nt::NamedTuple, names::AbstractVector{Symbol})
+    if isempty(names)
+        return nt
+    end
+    names = Tuple(k for (k, v) ∈ pairs(nt) if k ∈ names)
+    values = [v for (k, v) ∈ pairs(nt) if k ∈ names]
+    return NamedTuple{names}(values)
+end
+
+drop(nt::NamedTuple, name::Symbol) = pop(nt, [name])
+
+"""
+    merge_outer(objs::AbstractVector{<:Any})
+
+Merge objects. An error is reported if a key collision is detected.
+"""
+function merge_outer(objs::AbstractVector{<:Any})
+    return reduce(merge_outer, objs)
+end
+
+function merge_outer(objs::AbstractVector{<:Tuple})
+    # only construct final tuple
+    return Tuple(mᵢ for mᵢ in reduce(merge_outer, [[tᵢ for tᵢ in tup] for tup in objs]))
+end
+
+function merge_outer(t1::Tuple, t2::Tuple)
+    m = merge_outer([tᵢ for tᵢ in t1], [tⱼ for tⱼ in t2])
+    return Tuple(mᵢ for mᵢ in m)
+end
+
+function merge_outer(s1::AbstractVector, s2::AbstractVector)
+    common_keys = intersect(s1, s2)
+    if !isempty(common_keys)
+        error("Key collision detected: ", common_keys)
+    end
+    return vcat(s1, s2)
+end
+
+function merge_outer(nt1::NamedTuple, nt2::NamedTuple)
+    common_keys = intersect(keys(nt1), keys(nt2))
+    if !isempty(common_keys)
+        error("Key collision detected: ", common_keys)
+    end
+    return merge(nt1, nt2)
+end
+
+# -------------------------------------------------------------- #
+# Time operations
+# -------------------------------------------------------------- #
 
 """
     get_times(traj)::Vector{Float64}
@@ -661,6 +821,73 @@ end
     update!(Z, datavec_new)
     @test Z.datavec == datavec_new
     @test vec(Z.data) == datavec_new
+end
+
+@testitem "merge fixed time trajectories" begin
+    T = 10
+    Δt = 0.1
+    traj1 = NamedTrajectory(
+        (x = rand(3,T), x1 = rand(2, T), a = rand(2, T)); 
+        timestep=Δt, 
+        controls=:a
+    )
+    
+    traj2 = NamedTrajectory(
+        (x = rand(3,T), x2 = rand(2, T), a = rand(2, T)); 
+        timestep=Δt, 
+        controls=:a
+    )
+    
+    # Test merge
+    traj12 = merge(traj1, traj2, merge_names=(; a=1, x=2))
+    @test issetequal(traj12.state_names, (:x, :x1, :x2))
+    @test issetequal(traj12.control_names, (:a,))
+    @test traj12.x1 == traj1.x1
+    @test traj12.x2 == traj2.x2
+    @test traj12.a == traj1.a
+    @test traj12.x == traj2.x
+
+    traj21 = merge([traj1, traj2], merge_names=(; a=2, x=1))
+    @test issetequal(traj21.state_names, (:x, :x1, :x2))
+    @test issetequal(traj21.control_names, (:a,))
+    @test traj21.x1 == traj1.x1
+    @test traj21.x2 == traj2.x2
+    @test traj21.a == traj2.a
+    @test traj21.x == traj1.x
+
+    # Test collision
+    @error merge(traj1, traj2)
+
+    # Test free time
+    merge(traj1, traj2, merge_names=(; a=1, x=1), free_time=true).Δt == fill(Δt, T)
+end
+
+@testitem "merge free time trajectories" begin
+    T = 10
+    Δt = 0.1
+    traj1 = NamedTrajectory(
+        (x1 = rand(2, T), a = rand(2, T)); 
+        timestep=Δt, 
+        controls=:a
+    )
+
+    freetraj1 = NamedTrajectory(
+        (x1 = rand(2, T), Δt=fill(Δt, T), a = rand(2, T)); 
+        timestep=:Δt, 
+        controls=(:a, :Δt)
+    )
+    
+    freetraj2 = NamedTrajectory(
+        (x2 = rand(2, T), Δt=fill(2Δt, T),  a = rand(2, T)); 
+        timestep=:Δt, 
+        controls=(:a, :Δt)
+    )
+    
+    traj = merge(freetraj1, freetraj2, merge_names=(; a=1, Δt=1), free_time=true)
+    @test traj isa NamedTrajectory
+
+    traj = merge(traj1, freetraj2, merge_names=(; a=1), free_time=true)
+    @test traj isa NamedTrajectory
 end
 
 @testitem "returning times" begin
