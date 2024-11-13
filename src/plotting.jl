@@ -181,10 +181,12 @@ function plot(
                 # ylims
                 if ylims isa NamedTuple
                     if haskey(ylims, name)
-                        ylims = ylims[name]
+                        ylims_name = ylims[name]
                     else
-                        ylims = (nothing, nothing)
+                        ylims_name = (nothing, nothing)
                     end
+                else
+                    ylims_name = ylims
                 end
 
                 if isnothing(transformation_titles)
@@ -199,7 +201,7 @@ function plot(
                     title=title,
                     titlesize=titlesize,
                     xlabel=L"t",
-                    limits =(xlims, ylims)
+                    limits =(xlims, ylims_name)
                 )
 
                 # plot transformed data
@@ -258,10 +260,12 @@ function plot(
             # ylims
             if ylims isa NamedTuple
                 if haskey(ylims, name)
-                    ylims = ylims[name]
+                    ylims_name = ylims[name]
                 else
-                    ylims = (nothing, nothing)
+                    ylims_name = (nothing, nothing)
                 end
+            else
+                ylims_name = ylims
             end
 
             if isnothing(transformation_titles)
@@ -276,7 +280,7 @@ function plot(
                 title=title,
                 titlesize=titlesize,
                 xlabel=L"t",
-                limits=(xlims, ylims)
+                limits=(xlims, ylims_name)
             )
 
             # plot transformed data
@@ -350,10 +354,12 @@ function plot(
             # ylims
             if ylims isa NamedTuple
                 if haskey(ylims, name)
-                    ylims = ylims[name]
+                    ylims_name = ylims[name]
                 else
-                    ylims = (nothing, nothing)
+                    ylims_name = (nothing, nothing)
                 end
+            else
+                ylims_name = ylims
             end
             
             ax = Axis(
@@ -361,7 +367,7 @@ function plot(
                 title=parse(name, "(t)"),
                 titlesize=titlesize,
                 xlabel=L"t",
-                limits =(xlims, ylims)
+                limits =(xlims, ylims_name)
             )
         end
 
