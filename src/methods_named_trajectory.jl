@@ -488,7 +488,7 @@ function Base.merge(
         if index < 1 || index > length(trajs) 
             throw(BoundsError(trajs, index))
         end
-        [name for (name, keep) ∈ pairs(merge_names) if keep != index]
+        Symbol[name for (name, keep) ∈ pairs(merge_names) if keep != index]
     end
 
     # collect component data
@@ -524,8 +524,6 @@ function Base.merge(
     # check for timestep differences (ignores all free time problems, 
     # as they have key collision if unspecified)
     if timestep_name ∉ keys(merge_names) && !allequal([t.timestep for t in trajs])
-        println(timestep)
-        println([t.timestep for t in trajs])
         @warn (
             "Automatically merging trajectories with different timesteps.\n" *
             "To avoid this warning, specify the timestep index in merge_names."
@@ -543,20 +541,22 @@ function Base.merge(
         final=merge_outer(
             [drop(traj.final, names) for (traj, names) in zip(trajs, drop_names)]),
         goal=merge_outer(
-            [drop(traj.goal, names) for (traj, names) in zip(trajs, drop_names)])
+            [drop(traj.goal, names) for (traj, names) in zip(trajs, drop_names)]),
+        global_data=merge_outer(
+            [drop(traj.global_data, names) for (traj, names) in zip(trajs, drop_names)]),
     )
 end
 
-function drop(nt::NamedTuple, names::AbstractVector{Symbol})
-    if isempty(names)
+function drop(nt::NamedTuple, drop_names::AbstractVector{Symbol})
+    if isempty(drop_names)
         return nt
     end
-    names = Tuple(k for (k, v) ∈ pairs(nt) if k ∈ names)
-    values = [v for (k, v) ∈ pairs(nt) if k ∈ names]
+    names = Tuple(k for (k, v) ∈ pairs(nt) if k ∉ drop_names)
+    values = [v for (k, v) ∈ pairs(nt) if k ∉ drop_names]
     return NamedTuple{names}(values)
 end
 
-drop(nt::NamedTuple, name::Symbol) = pop(nt, [name])
+drop(nt::NamedTuple, name::Symbol) = drop(nt, [name])
 
 """
     merge_outer(objs::AbstractVector{<:Any})
@@ -828,14 +828,12 @@ end
     Δt = 0.1
     traj1 = NamedTrajectory(
         (x = rand(3,T), x1 = rand(2, T), a = rand(2, T)); 
-        timestep=Δt, 
-        controls=:a
+        timestep=Δt, controls=:a
     )
     
     traj2 = NamedTrajectory(
         (x = rand(3,T), x2 = rand(2, T), a = rand(2, T)); 
-        timestep=Δt, 
-        controls=:a
+        timestep=Δt, controls=:a
     )
     
     # Test merge
@@ -862,29 +860,44 @@ end
     merge(traj1, traj2, merge_names=(; a=1, x=1), free_time=true).Δt == fill(Δt, T)
 end
 
-@testitem "merge free time trajectories" begin
+@testitem "merge many trajectories" begin
+    T = 10
+    Δt = 0.1
+    xs = [Symbol("x$i") for i in 1:5]
+    trajs = [
+        NamedTrajectory((x => rand(2, T), a = rand(2, T)); timestep=Δt, controls=:a) 
+        for x in xs]
+
+    traj = merge(trajs, merge_names=(; a=1))
+    @test traj isa NamedTrajectory
+    @test issetequal(traj.state_names, xs)
+end
+
+@testitem "merge free time trajectories" begin    
     T = 10
     Δt = 0.1
     traj1 = NamedTrajectory(
         (x1 = rand(2, T), a = rand(2, T)); 
-        timestep=Δt, 
-        controls=:a
+        timestep=Δt, controls=:a
     )
 
     freetraj1 = NamedTrajectory(
         (x1 = rand(2, T), Δt=fill(Δt, T), a = rand(2, T)); 
-        timestep=:Δt, 
-        controls=(:a, :Δt)
+        timestep=:Δt, controls=(:a, :Δt)
     )
     
     freetraj2 = NamedTrajectory(
         (x2 = rand(2, T), Δt=fill(2Δt, T),  a = rand(2, T)); 
-        timestep=:Δt, 
-        controls=(:a, :Δt)
+        timestep=:Δt, controls=(:a, :Δt)
     )
     
     traj = merge(freetraj1, freetraj2, merge_names=(; a=1, Δt=1), free_time=true)
     @test traj isa NamedTrajectory
+    @test traj.Δt == fill(Δt, (1, T))
+
+    traj = merge(freetraj1, freetraj2, merge_names=(; a=1, Δt=1), free_time=false)
+    @test traj isa NamedTrajectory
+    @test traj.timestep ≈ Δt
 
     traj = merge(traj1, freetraj2, merge_names=(; a=1), free_time=true)
     @test traj isa NamedTrajectory
@@ -909,12 +922,12 @@ end
     fixed_time_traj = get_fixed_time_traj(T=T)
     free_time_traj = get_free_time_traj(T=T)
 
-    # @test size(fixed_time_traj) == (
-    #     dim = sum(fixed_time_traj.dims[fixed_time_traj.names]), T = T
-    # )
-    # @test size(free_time_traj) == (
-    #     dim = sum(free_time_traj.dims[free_time_traj.names]), T = T
-    # )
+    @test size(fixed_time_traj) == (
+        dim = sum(fixed_time_traj.dims[fixed_time_traj.names]), T = T
+    )
+    @test size(free_time_traj) == (
+        dim = sum(free_time_traj.dims[free_time_traj.names]), T = T
+    )
 end
 
 end
