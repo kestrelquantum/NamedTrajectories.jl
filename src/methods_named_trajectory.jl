@@ -12,6 +12,8 @@ export merge
 export get_times
 export get_timesteps
 export get_duration
+export convert_fixed_time
+export convert_free_time
 
 using OrderedCollections
 using TestItemRunner
@@ -321,18 +323,8 @@ end
 
 Remove a component from the trajectory.
 """
-function remove_component(
-    traj::NamedTrajectory,
-    name::Symbol;
-    new_control_name::Union{Nothing, Symbol}=nothing,
-    new_control_names::Union{Nothing, Tuple{Vararg{Symbol}}}=nothing
-)
-    return remove_components(
-        traj,
-        [name];
-        new_control_name=new_control_name,
-        new_control_names=new_control_names
-    )
+function remove_component(traj::NamedTrajectory, name::Symbol; kwargs...)
+    return remove_components(traj, [name]; kwargs...)
 end
 
 """
@@ -343,6 +335,7 @@ Remove a set of components from the trajectory.
 function remove_components(
     traj::NamedTrajectory,
     names::AbstractVector{<:Symbol};
+    new_timestep::Union{Nothing, Real}=nothing,
     new_control_name::Union{Nothing, Symbol}=nothing,
     new_control_names::Union{Nothing, Tuple{Vararg{Symbol}}}=nothing
 )
@@ -358,7 +351,10 @@ function remove_components(
 
     control_names = [n for n ∈ traj.control_names if n ∉ names]
     @assert !isempty(control_names) || !isnothing(new_control_names) "At least one control must be available"
-    return NamedTrajectory(comps, traj; new_control_names=new_control_names)
+    return NamedTrajectory(
+        comps, traj; 
+        new_control_names=new_control_names, new_timestep=new_timestep
+    )
 end
 
 """
@@ -544,6 +540,37 @@ function Base.merge(
             [drop(traj.goal, names) for (traj, names) in zip(trajs, drop_names)]),
         global_data=merge_outer(
             [drop(traj.global_data, names) for (traj, names) in zip(trajs, drop_names)]),
+    )
+end
+
+function convert_fixed_time(
+    traj::NamedTrajectory;
+    timestep_symbol=:Δt,
+    timestep = sum(get_timesteps(traj)) / traj.T
+)
+    @assert timestep_symbol ∈ traj.control_names "Problem must be free time"
+    return remove_component(traj, timestep_symbol; new_timestep=timestep)
+end
+
+function convert_free_time(
+    traj::NamedTrajectory,
+    timestep_bounds::BoundType,
+    timestep_name=:Δt,
+)
+    @assert timestep_name ∉ traj.control_names "Problem must not be free time"
+
+    time_bound = (; timestep_name => timestep_bounds,)
+    time_data = (; timestep_name => get_timesteps(traj))
+    comp_data = get_components(traj)
+
+    return NamedTrajectory(
+        merge_outer(comp_data, time_data);
+        controls=merge_outer(traj.control_names, (timestep_name,)),
+        timestep=timestep_name,
+        bounds=merge_outer(traj.bounds, time_bound),
+        initial=traj.initial,
+        final=traj.final,
+        goal=traj.goal
     )
 end
 
@@ -901,6 +928,24 @@ end
 
     traj = merge(traj1, freetraj2, merge_names=(; a=1), free_time=true)
     @test traj isa NamedTrajectory
+end
+
+@testitem "Free and fixed time conversion" begin
+    include("../test/test_utils.jl")
+
+    free_traj = named_trajectory_type_1(free_time=true)
+    fixed_traj = named_trajectory_type_1(free_time=false)
+    Δt_bounds = free_traj.bounds[:Δt]
+
+    # Test free to fixed time
+    @test :Δt ∉ convert_fixed_time(free_traj).control_names
+
+    # Test fixed to free time
+    @test :Δt ∈ convert_free_time(fixed_traj, Δt_bounds).control_names
+
+    # Test inverses
+    @test convert_free_time(convert_fixed_time(free_traj), Δt_bounds) == free_traj
+    @test convert_fixed_time(convert_free_time(fixed_traj, Δt_bounds)) == fixed_traj
 end
 
 @testitem "returning times" begin

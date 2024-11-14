@@ -489,6 +489,7 @@ function NamedTrajectory(
         <:Tuple{Vararg{AbstractMatrix{R}}}
     } where names,
     traj::NamedTrajectory;
+    new_timestep::Union{Nothing, R}=nothing,
     new_control_names::Tuple{Vararg{Symbol}}=()
 ) where R <: Real
     @assert all([k ∈ traj.names for k ∈ keys(comps)])
@@ -499,6 +500,10 @@ function NamedTrajectory(
     )
     @assert !isempty(control_names) "must specify at least one control"
 
+    if traj.timestep isa Symbol && isnothing(new_timestep)
+        @assert traj.timestep ∈ keys(comps) "timestep symbol must be in components"
+    end
+
     bounds = NamedTuple([(k => traj.bounds[k]) for k ∈ keys(comps) if k ∈ keys(traj.bounds)])
     initial = NamedTuple([(k => traj.initial[k]) for k ∈ keys(comps) if k ∈ keys(traj.initial)])
     final = NamedTuple([(k => traj.final[k]) for k ∈ keys(comps) if k ∈ keys(traj.final)])
@@ -508,7 +513,7 @@ function NamedTrajectory(
     return NamedTrajectory(
         comps;
         controls=control_names,
-        timestep=traj.timestep,
+        timestep=isnothing(new_timestep) ? traj.timestep : new_timestep,
         bounds=bounds,
         initial=initial,
         final=final,
