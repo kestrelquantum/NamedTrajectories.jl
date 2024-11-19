@@ -2,8 +2,6 @@ module NamedTrajectories
 
 using Reexport
 
-@reexport using LaTeXStrings
-
 @reexport using OrderedCollections: OrderedDict
 
 include("struct_named_trajectory.jl")
@@ -23,8 +21,5 @@ include("methods_knot_point.jl")
 
 include("utils.jl")
 @reexport using .Utils
-
-include("plotting.jl")
-@reexport using .Plotting
 
 end
