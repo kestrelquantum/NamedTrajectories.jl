@@ -22,4 +22,7 @@ include("methods_knot_point.jl")
 include("utils.jl")
 @reexport using .Utils
 
+include("plotting.jl")
+@reexport using .Plotting
+
 end
