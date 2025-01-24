@@ -1,7 +1,7 @@
 name = "NamedTrajectories"
 uuid = "538bc3a1-5ab9-4fc3-b776-35ca1e893e08"
 authors = ["Aaron Trowbridge <aaron.j.trowbridge@gmail.com> and contributors"]
-version = "0.2.5"
+version = "0.2.6"
 
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
@@ -16,7 +16,7 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 Unidecode = "967fb449-e509-55aa-8007-234b4096b967"
 
 [compat]
-CairoMakie = "0.12"
+CairoMakie = "0.13"
 JLD2 = "0.5"
 LaTeXStrings = "1.4"
 Latexify = "0.16"
