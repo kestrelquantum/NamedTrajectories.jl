@@ -2,13 +2,20 @@
 
 *An elegant way to handle messy trajectory data*
 
-!!! info "Notice"
-    This package is under active development and issues may arise -- please be patient and report any issues you find!  
 
 ## Motivation
 
 [NamedTrajectories.jl](https://github.com/kestrelquantum/NamedTrajectories.jl) is designed to aid in the messy indexing involved in solving trajectory optimization problems of the form
+```math
+\begin{aligned}
+    \arg \min_{\mathbf{Z}}\quad & J(\mathbf{Z}) \\
+    \nonumber \text{s.t.}\qquad & \mathbf{f}(\mathbf{Z}) = 0 \\
+    \nonumber & \mathbf{g}(\mathbf{Z}) \le 0  
+\end{aligned}
+```
+where $\mathbf{Z}$ is a trajectory.
 
+In more detail, this problem might look something like
 ```math
 \begin{align*}
 \underset{u^1_{1:T}, \dots, u^{n_c}_{1:T}}{\underset{x^1_{1:T}, \cdots, x^{n_s}_{1:T}}{\operatorname{minimize}}} &\quad J\qty(x^{1:n_s}_{1:T},u^{1:n_c}_{1:T}) \\
@@ -21,10 +28,9 @@
 & \quad u^i_{\min} < u^i_t < u^i_{\max} \\
 \end{align*}
 ```
+where $x^i_t$ is the $i$th state variable and $u^i_t$ is the $i$th control variable at timestep $t$; state and control variables can be of arbitrary dimension. The function $f$ is a nonlinear constraint function and $J$ is the objective function. These problems can have an arbitrary number of state ($n_s$) and control ($n_c$) variables, and the number of timesteps $T$ can vary as well.  
 
-Where $x^i_t$ is the $i$th state variable and $u^i_t$ is the $i$th control variable at timestep $t$; state and control variables can be of arbitrary dimension. The function $f$ is a nonlinear constraint function and $J$ is the objective function. These problems can have an arbitrary number of state ($n_s$) and control ($n_c$) variables, and the number of timesteps $T$ can vary as well.  
-
-In trajectory optimization problems it is common practice to bundle all of the state and control variables together into a single *knot point*
+It is common practice in trajectory optimization to bundle all of the state and control variables together into a single *knot point*
 
 ```math
 z_t = \mqty(
