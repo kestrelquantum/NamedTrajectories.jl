@@ -7,7 +7,7 @@
 
 ## Motivation
 
-[NamedTrajectories.jl](https://github.com/aarontrowbridge/NamedTrajectories.jl) is designed to aid in the messy indexing involved in solving trajectory optimization problems of the form
+[NamedTrajectories.jl](https://github.com/kestrelquantum/NamedTrajectories.jl) is designed to aid in the messy indexing involved in solving trajectory optimization problems of the form
 
 ```math
 \begin{align*}
