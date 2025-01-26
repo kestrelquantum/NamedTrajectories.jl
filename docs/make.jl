@@ -23,7 +23,7 @@ pages = [
 
 format = Documenter.HTML(;
     prettyurls=get(ENV, "CI", "false") == "true",
-    canonical="https://aarontrowbridge.github.io/NamedTrajectories.jl",
+    canonical="https://kestrelquantum.github.io/NamedTrajectories.jl",
     edit_link="main",
     assets=String[],
     mathengine = MathJax3(Dict(
@@ -71,6 +71,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/aarontrowbridge/NamedTrajectories.jl.git",
+    repo="github.com/kestrelquantum/NamedTrajectories.jl.git",
     devbranch="main",
 )

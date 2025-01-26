@@ -1,6 +1,6 @@
 # NamedTrajectories.jl
 
-<div align="center"> <a href="https://github.com/aarontrowbridge/Piccolo.jl">
+<div align="center"> <a href="https://github.com/kestrelquantum/Piccolo.jl">
     <img src="assets/logo.svg" alt="logo" width="35%"/>
 </a> </div>
 
@@ -8,7 +8,7 @@
 
 | **Documentation** | **Build Status** | **Support** |
 |:-----------------:|:----------------:| :----------:|
-| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://kestrelquantum.github.io/NamedTrajectories.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://kestrelquantum.github.io/NamedTrajectories.jl/dev/) | [![Build Status](https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/aarontrowbridge/NamedTrajectories.jl)| [![Unitary Fund](https://img.shields.io/badge/Supported%20By-Unitary%20Fund-FFFF00.svg)](https://unitary.fund)
+| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://kestrelquantum.github.io/NamedTrajectories.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://kestrelquantum.github.io/NamedTrajectories.jl/dev/) | [![Build Status](https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/kestrelquantum/NamedTrajectories.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/kestrelquantum/NamedTrajectories.jl)| [![Unitary Fund](https://img.shields.io/badge/Supported%20By-Unitary%20Fund-FFFF00.svg)](https://unitary.fund)
 
 </div>
 
