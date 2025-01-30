@@ -29,6 +29,9 @@ pardiso.lic
 /.CondaPkg/
 *.code-workspace
 
+# generated Literate
+docs/src/generated/
+
 # generated build folder
 build/
 
