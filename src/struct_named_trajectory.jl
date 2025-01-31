@@ -4,7 +4,7 @@ export NamedTrajectory
 export BoundType
 
 using OrderedCollections
-using TestItemRunner
+using TestItems
 
 const BoundType = Tuple{AbstractVector{<:Real}, AbstractVector{<:Real}}
 
