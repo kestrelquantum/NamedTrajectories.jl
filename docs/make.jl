@@ -4,18 +4,24 @@ using Literate
 
 push!(LOAD_PATH, joinpath(@__DIR__, "..", "src"))
 
+@info "Building Documenter site for NamedTrajectories.jl"
+open(joinpath(@__DIR__, "src", "index.md"), write = true) do io
+    for line in eachline(joinpath(@__DIR__, "..", "README.md"))
+        if occursin("<!--", line) && occursin("-->", line)
+            comment_content = match(r"<!--(.*)-->", line).captures[1]
+            write(io, comment_content * "\n")
+        else
+            write(io, line * "\n")
+        end
+    end
+end
+
 pages = [
     "Home" => "index.md",
     "Quickstart Guide" => "generated/quickstart.md",
     "Manual" => [
         "generated/man/constructors.md",
          "generated/man/params_in_struct.md",
-    #     "generated/man/retrieval.md",
-    #     "generated/man/add_remove.md",
-    #     "generated/man/updating.md",
-    #     "generated/man/times.md",
-    #     "generated/man/operations.md",
-
     ],
     "Plotting" => "generated/plotting.md",
     "Library" => "lib.md"
