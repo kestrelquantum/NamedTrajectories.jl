@@ -1,3 +1,7 @@
+# ```@meta
+# CollapsedDocStrings = true
+# ```
+
 # # Plotting
 
 # Visualizing trajectories is crucial for understanding the solutions of trajectory optmization problems and `NamedTrajectories` exports a `plot` function that contains a lot of functionality that is continually being added to. [Makie.jl](https://docs.makie.org/stable/) is used as the plotting framework, and at the moment the default backend is `CairoMakie`, as it creates high quality vector graphics. The function is called as follows:

@@ -5,7 +5,7 @@
   <img src="assets/logo.svg" alt="logo" width="25%"/>
 </a> 
 
-<div style="display: table; width: 50%;">
+<div style="display: table; width: 100%;">
   <div style="display: table-row;">
     <div style="display: table-cell; text-align: center;"><b>Documentation</b></div>
     <div style="display: table-cell; text-align: center;"><b>Build Status</b></div>
@@ -38,6 +38,7 @@
 
 <br>
 <i>An elegant way to handle messy trajectory data</i>
+<br>
 
 </div>
 

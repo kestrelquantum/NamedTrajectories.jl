@@ -38,6 +38,7 @@
 
 <br>
 <i>An elegant way to handle messy trajectory data</i>
+<br>
 
 </div>
 
