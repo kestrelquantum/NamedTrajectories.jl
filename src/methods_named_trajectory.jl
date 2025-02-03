@@ -16,7 +16,7 @@ export convert_fixed_time
 export convert_free_time
 
 using OrderedCollections
-using TestItemRunner
+using TestItems
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint

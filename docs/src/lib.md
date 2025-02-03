@@ -8,7 +8,7 @@ Modules = [
 ]
 ```
 
-## random trajectory methods
+## Random trajectory methods
 ```@autodocs
 Modules = [
     NamedTrajectories.RandomTrajectories

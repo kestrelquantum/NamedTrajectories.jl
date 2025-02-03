@@ -1,6 +1,6 @@
 module RandomTrajectories
 
-using TestItemRunner
+using TestItems
 
 using ..StructNamedTrajectory
 

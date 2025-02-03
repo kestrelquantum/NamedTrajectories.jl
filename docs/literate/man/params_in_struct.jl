@@ -1,5 +1,4 @@
-# # Add params in NamedTrajectory
-
+# # Parameters
 # NamedTrajectory.jl support passing parameters as a Tuple when construct a `NamedTrajectory`.
 
 using NamedTrajectories

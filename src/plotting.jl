@@ -7,7 +7,7 @@ import CairoMakie: plot
 using CairoMakie
 using LaTeXStrings
 using OrderedCollections
-using TestItemRunner
+using TestItems
 
 using ..StructNamedTrajectory
 using ..StructKnotPoint
