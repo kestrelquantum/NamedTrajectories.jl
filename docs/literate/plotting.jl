@@ -55,13 +55,14 @@ traj = NamedTrajectory(
 )
 
 ## plot the trajectory
-plot(traj)
+using CairoMakie
+NamedTrajectories.plot(traj)
 
 # ## Selectively plotting components
 
 # We can selectively plot components of the trajectory by passing a `Vector` of `Symbol`s to the `components` keyword argument. For example, if we only wanted to plot the state and the first control we could do the following:
-
-plot(traj, [:x, :u])
+using CairoMakie
+NamedTrajectories.plot(traj, [:x, :u])
 
 # ## Playing with transformations
 
@@ -73,7 +74,8 @@ transformations = OrderedDict(
     :x => x -> abs.(x),
 )
 
-plot(traj, [:x]; transformations=transformations)
+using CairoMakie
+NamedTrajectories.plot(traj, [:x]; transformations=transformations)
 
 # We can also pass multiple transformations to the same component, with selective labels and titles:
 
@@ -102,7 +104,8 @@ transformation_titles = OrderedDict(
 )
 
 ## plot the trajectory, with only the transformation and the `u` control
-plot(traj, [:u];
+using CairoMakie
+NamedTrajectories.plot(traj, [:u];
     transformations=transformations,
     transformation_labels=transformation_labels,
     include_transformation_labels=[[true, true]],

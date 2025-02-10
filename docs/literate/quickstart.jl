@@ -49,8 +49,8 @@ traj = NamedTrajectory(data; timestep=timestep, controls=control)
 traj.names
 
 # Let's plot this trajectory
-
-plot(traj)
+using CairoMakie
+NamedTrajectories.plot(traj)
 
 
 # ## Creating a variable-timestep `NamedTrajectory`
