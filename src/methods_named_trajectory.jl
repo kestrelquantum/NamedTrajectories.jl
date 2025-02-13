@@ -15,6 +15,10 @@ export get_duration
 export convert_fixed_time
 export convert_free_time
 
+export add_suffix
+export remove_suffix
+export get_suffix
+
 using OrderedCollections
 using TestItems
 
@@ -432,6 +436,206 @@ function update_bound!(traj::NamedTrajectory, name::Symbol, new_bound::BoundType
     new_bounds = NamedTuple(new_bounds)
     traj.bounds = new_bounds
     return nothing
+end
+
+# -------------------------------------------------------------- #
+# Modify component keys
+# -------------------------------------------------------------- #
+
+"""
+    add_suffix(obj::T, suffix::String)
+
+Add the suffix to the symbols of the object.
+"""
+function add_suffix end
+
+add_suffix(symb::Symbol, suffix::String) = Symbol(string(symb, suffix))
+
+function add_suffix(
+    symbs::Tuple, 
+    suffix::String; 
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    return Tuple(s ∈ exclude ? s : add_suffix(s, suffix) for s ∈ symbs)
+end
+
+function add_suffix(
+    symbs::AbstractVector, 
+    suffix::String; 
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    return [s ∈ exclude ? s : add_suffix(s, suffix) for s ∈ symbs]
+end
+
+function add_suffix(
+    d::Dict{Symbol, Any}, 
+    suffix::String; 
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    return typeof(d)(k ∈ exclude ? k : add_suffix(k, suffix) => v for (k, v) ∈ d)
+end
+
+function add_suffix(
+    nt::NamedTuple, 
+    suffix::String; 
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    symbs = Tuple(k ∈ exclude ? k : add_suffix(k, suffix) for k ∈ keys(nt))
+    return NamedTuple{symbs}(values(nt))
+end
+
+function add_suffix(
+    components::Union{Tuple, AbstractVector}, 
+    traj::NamedTrajectory, 
+    suffix::String
+)
+    return add_suffix(get_components(components, traj), suffix)
+end
+
+function add_suffix(traj::NamedTrajectory, suffix::String)
+    # Timesteps are appended because of bounds and initial/final constraints.
+    component_names = vcat(traj.state_names..., traj.control_names...)
+    components = add_suffix(component_names, traj, suffix)
+    controls = add_suffix(traj.control_names, suffix)
+    return NamedTrajectory(
+        components;
+        controls=controls,
+        timestep=traj.timestep isa Symbol ? add_suffix(traj.timestep, suffix) : traj.timestep,
+        bounds=add_suffix(traj.bounds, suffix),
+        initial=add_suffix(traj.initial, suffix),
+        final=add_suffix(traj.final, suffix),
+        goal=add_suffix(traj.goal, suffix)
+    )
+end
+
+
+# remove suffix
+# -------------
+
+"""
+    remove_suffix(obj::T, suffix::String)
+
+Remove the suffix from the symbols of the object.
+"""
+function remove_suffix end
+
+function remove_suffix(s::String, suffix::String)
+    if endswith(s, suffix)
+        return chop(s, tail=length(suffix))
+    else
+        error("Suffix '$suffix' not found at the end of '$s'")
+    end
+end
+
+remove_suffix(symb::Symbol, suffix::String) = Symbol(remove_suffix(String(symb), suffix))
+
+function remove_suffix(
+    symbs::Tuple, 
+    suffix::String; 
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    return Tuple(s ∈ exclude ? s : remove_suffix(s, suffix) for s ∈ symbs)
+end
+
+function remove_suffix(
+    symbs::AbstractVector,
+    suffix::String;
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    return [s ∈ exclude ? s : remove_suffix(s, suffix) for s ∈ symbs]
+end
+
+function remove_suffix(
+    d::Dict{Symbol, Any},
+    suffix::String;
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    return typeof(d)(k ∈ exclude ? k : remove_suffix(k, suffix) => v for (k, v) ∈ d)
+end
+
+function remove_suffix(
+    nt::NamedTuple, 
+    suffix::String; 
+    exclude::AbstractVector{<:Symbol}=Symbol[]
+)
+    symbs = Tuple(k ∈ exclude ? k : remove_suffix(k, suffix) for k ∈ keys(nt))
+    return NamedTuple{symbs}(values(nt))
+end
+
+# get suffix
+# ----------
+
+Base.endswith(symb::Symbol, suffix::AbstractString) = endswith(String(symb), suffix)
+
+"""
+    get_suffix(obj::T, suffix::String; remove::Bool=false)
+
+Get the data with the suffix from the object. Remove the suffix if `remove=true`.
+"""
+function get_suffix end
+
+function get_suffix(
+    nt::NamedTuple, 
+    suffix::String; 
+    remove::Bool=false
+)
+    names = Tuple(remove ? remove_suffix(k, suffix) : k for (k, v) ∈ pairs(nt) if endswith(k, suffix))
+    values = [v for (k, v) ∈ pairs(nt) if endswith(k, suffix)]
+    return NamedTuple{names}(values)
+end
+
+function get_suffix(
+    d::Dict{<:Symbol, <:Any}, 
+    suffix::String; 
+    remove::Bool=false
+)
+    return Dict(remove ? remove_suffix(k, suffix) : k => v for (k, v) ∈ d if endswith(k, suffix))
+end
+
+function get_suffix(
+    traj::NamedTrajectory, 
+    suffix::String; 
+    remove::Bool=false
+)
+    state_names = Tuple(s for s ∈ traj.state_names if endswith(s, suffix))
+
+    # control names
+    if traj.timestep isa Symbol
+        if endswith(traj.timestep, suffix)
+            control_names = Tuple(s for s ∈ traj.control_names if endswith(s, suffix))
+            timestep = remove ? remove_suffix(traj.timestep, suffix) : traj.timestep
+            exclude = Symbol[]
+        else
+            # extract the shared timestep
+            control_names = Tuple(s for s ∈ traj.control_names if endswith(s, suffix) || s == traj.timestep)
+            timestep = traj.timestep
+            exclude = [timestep]
+        end
+    else
+        control_names = Tuple(s for s ∈ traj.control_names if endswith(s, suffix))
+        timestep = traj.timestep
+        exclude = Symbol[]
+    end
+
+    component_names = Tuple(vcat(state_names..., control_names...))
+    components = get_components(component_names, traj)
+    if remove
+        components = remove_suffix(components, suffix; exclude=exclude)
+    end
+
+    if isempty(component_names)
+        error("No components found with suffix '$suffix'")
+    end 
+
+    return NamedTrajectory(
+        components,
+        controls=remove ? remove_suffix(control_names, suffix; exclude=exclude) : control_names,
+        timestep=timestep,
+        bounds=get_suffix(traj.bounds, suffix, remove=remove),
+        initial=get_suffix(traj.initial, suffix, remove=remove),
+        final=get_suffix(traj.final, suffix, remove=remove),
+        goal=get_suffix(traj.goal, suffix, remove=remove)
+    )
 end
 
 # -------------------------------------------------------------- #
@@ -973,6 +1177,40 @@ end
     @test size(free_time_traj) == (
         dim = sum(free_time_traj.dims[free_time_traj.names]), T = T
     )
+end
+
+@testitem "Apply suffix to trajectories" begin
+    include("../test/test_utils.jl")
+
+    T = 5
+    suffix = "_new"
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    new_traj = add_suffix(fixed_time_traj, suffix)
+    @test new_traj.state_names == add_suffix(fixed_time_traj.state_names, suffix)
+    @test new_traj.control_names == add_suffix(fixed_time_traj.control_names, suffix)
+    @test fixed_time_traj == add_suffix(fixed_time_traj, "")
+
+    free_time_traj = get_free_time_traj(T=T)
+    new_traj = add_suffix(free_time_traj, suffix)
+    @test new_traj.state_names == add_suffix(free_time_traj.state_names, suffix)
+    @test new_traj.control_names == add_suffix(free_time_traj.control_names, suffix)
+    @test free_time_traj == add_suffix(free_time_traj, "")
+end
+
+@testitem "Get suffix" begin
+    include("../test/test_utils.jl")
+
+    T = 5
+    suffix = "_new"
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    new_traj = add_suffix(fixed_time_traj, suffix)
+    @test get_suffix(new_traj, suffix) == new_traj
+    @test get_suffix(new_traj, suffix, remove=true) == fixed_time_traj
+
+    free_time_traj = get_free_time_traj(T=T)
+    new_traj = add_suffix(free_time_traj, suffix)
+    @test get_suffix(new_traj, suffix) == new_traj
+    @test get_suffix(new_traj, suffix, remove=true) == free_time_traj
 end
 
 end
