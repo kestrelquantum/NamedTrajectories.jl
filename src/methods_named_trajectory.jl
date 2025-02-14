@@ -555,14 +555,6 @@ function remove_suffix(
 end
 
 function remove_suffix(
-    d::Dict{Symbol, Any},
-    suffix::String;
-    exclude::AbstractVector{<:Symbol}=Symbol[]
-)
-    return typeof(d)(k ∈ exclude ? k : remove_suffix(k, suffix) => v for (k, v) ∈ d)
-end
-
-function remove_suffix(
     nt::NamedTuple, 
     suffix::String; 
     exclude::AbstractVector{<:Symbol}=Symbol[]
@@ -1230,6 +1222,25 @@ end
     )
 end
 
+@testitem "Add suffix" begin
+    @test add_suffix(:a, "_new") == :a_new
+
+    test = (:a, :b)
+    @test add_suffix(test, "_new") == (:a_new, :b_new)
+    @test add_suffix(test, "_new", exclude=[:b]) == (:a_new, :b)
+    @test add_suffix(test, "_new", exclude=[:a]) == (:a, :b_new)
+
+    test = (a=1, b=2)
+    @test add_suffix(test, "_new") == (a_new=1, b_new=2)
+    @test add_suffix(test, "_new", exclude=[:b]) == (a_new=1, b=2)
+    @test add_suffix(test, "_new", exclude=[:a]) == (a=1, b_new=2)
+
+    test = [:a, :b]
+    @test add_suffix(test, "_new") == [:a_new, :b_new]
+    @test add_suffix(test, "_new", exclude=[:b]) == [:a_new, :b]
+    @test add_suffix(test, "_new", exclude=[:a]) == [:a, :b_new]
+end
+
 @testitem "Apply suffix to trajectories" begin
     include("../test/test_utils.jl")
 
@@ -1246,6 +1257,25 @@ end
     @test new_traj.state_names == add_suffix(free_time_traj.state_names, suffix)
     @test new_traj.control_names == add_suffix(free_time_traj.control_names, suffix)
     @test free_time_traj == add_suffix(free_time_traj, "")
+end
+
+@testitem "Remove suffix" begin 
+    @test remove_suffix(:a_new, "_new") == :a
+
+    test = (:a_new, :b_new)
+    @test remove_suffix(test, "_new") == (:a, :b)
+    @test remove_suffix(test, "_new", exclude=[:b_new]) == (:a, :b_new)
+    @test remove_suffix(test, "_new", exclude=[:a_new]) == (:a_new, :b)
+
+    test = (a_new=1, b_new=2)
+    @test remove_suffix(test, "_new") == (a=1, b=2)
+    @test remove_suffix(test, "_new", exclude=[:b_new]) == (a=1, b_new=2)
+    @test remove_suffix(test, "_new", exclude=[:a_new]) == (a_new=1, b=2)
+
+    test = [:a_new, :b_new]
+    @test remove_suffix(test, "_new") == [:a, :b]
+    @test remove_suffix(test, "_new", exclude=[:b_new]) == [:a, :b_new]
+    @test remove_suffix(test, "_new", exclude=[:a_new]) == [:a_new, :b]
 end
 
 @testitem "Get suffix" begin
