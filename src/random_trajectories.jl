@@ -16,7 +16,10 @@ using ..StructNamedTrajectory
         control_dim::Int=2
     )
 
-Create a random `NamedTrajectory` with `T` time steps, a state variable `x` of dimension `state_dim`, and a control variable `u` of dimension `control_dim`. If `free_time` is `true`, the time step is a symbol `timestep_name` and the time step value is `timestep_value`. Otherwise, the time step is a number `timestep_value`.
+Create a random `NamedTrajectory` with `T` time steps, a state variable `x` of dimension 
+`state_dim`, and a control variable `u` of dimension `control_dim`. If `free_time` is 
+`true`, the time step is a symbol `timestep_name` and the time step value is 
+`timestep_value`. Otherwise, the time step is a number `timestep_value`.
 """
 function Base.rand(
     ::Type{NamedTrajectory},

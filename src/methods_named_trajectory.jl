@@ -112,6 +112,8 @@ end
     length(::NamedTrajectory)
 
 Returns the length of all variables of the trajectory, including global data.
+
+TODO: Should global data be in length?
 """
 function Base.length(Z::NamedTrajectory)
     return Z.dim * Z.T + Z.global_dim
@@ -227,7 +229,7 @@ function get_component_names(traj::NamedTrajectory, comps::AbstractVector{<:Int}
 end
 
 """
-    add_component!(traj, name::Symbol, data::AbstractVecOrMat; type={:state, :control})
+    add_component!(traj, name::Symbol, data::AbstractVecOrMat; type={:state, :control, :slack})
 
 Add a component to the trajectory.
 
@@ -264,7 +266,7 @@ function add_component!(
         comp_dict[:states] = vcat(comp_dict[:states], comp_dict[name])
     elseif type == :control
         comp_dict[:controls] = vcat(comp_dict[:controls], comp_dict[name])
-    else
+    elseif type == :slack
         if :slacks ∉ keys(comp_dict)
             comp_dict[:slacks] = comp_dict[name]
         else
@@ -286,9 +288,8 @@ function add_component!(
     if type == :state
         dim_dict[:states] += dim
     elseif type == :control
-        traj.control_names = (traj.control_names..., name)
         dim_dict[:controls] += dim
-    else
+    elseif type == :slack
         if :slacks ∉ keys(dim_dict)
             dim_dict[:slacks] = dim
         else
@@ -302,7 +303,15 @@ function add_component!(
     # update names
 
     traj.names = (traj.names..., name)
-
+    
+    if type == :state
+        traj.state_names = (traj.state_names..., name)
+    elseif type == :control
+        traj.control_names = (traj.control_names..., name)
+    elseif type == :slack
+        # slack names are states
+        traj.state_names = (traj.state_names..., name)
+    end
 
     # update data
 
@@ -932,11 +941,13 @@ end
     add_component!(fixed_time_traj, name, data; type=type)
     @test fixed_time_traj.z ≈ data
     @test name ∈ fixed_time_traj.names
+    @test name ∈ fixed_time_traj.state_names
 
     # case: free time
     add_component!(free_time_traj, name, data; type=type)
     @test free_time_traj.z ≈ data
     @test name ∈ free_time_traj.names
+    @test name ∈ free_time_traj.state_names
 
     # adding state vector component
     name = :y
@@ -947,11 +958,13 @@ end
     add_component!(fixed_time_traj, name, data; type=type)
     @test vec(fixed_time_traj.y) ≈ vec(data)
     @test name ∈ fixed_time_traj.names
+    @test name ∈ fixed_time_traj.state_names
     
     # case: free time
     add_component!(free_time_traj, name, data; type=type)
     @test vec(free_time_traj.y) ≈ vec(data)
     @test name ∈ free_time_traj.names
+    @test name ∈ fixed_time_traj.state_names
 
     # removing state components
     names = [:z, :y]
@@ -959,10 +972,12 @@ end
     # case: fixed time
     fixed_time_traj = remove_components(fixed_time_traj, names)
     @test all(name ∉ fixed_time_traj.names for name in names)
+    @test all(name ∉ fixed_time_traj.state_names for name in names)
 
     # case: free time
     free_time_traj = remove_components(free_time_traj, names)
     @test all(name ∉ free_time_traj.names for name in names)
+    @test all(name ∉ free_time_traj.state_names for name in names)
 end
 
 @testitem "adding and removing control matrix component" begin
@@ -1024,6 +1039,41 @@ end
     @test vec(free_time_traj.b) ≈ vec(data)
     @test name ∈ free_time_traj.names
     @test name ∈ free_time_traj.control_names
+end
+
+@testitem "adding and removing slack matrix component" begin
+    include("../test/test_utils.jl")
+    T = 5
+    fixed_time_traj = get_fixed_time_traj(T=T)
+    free_time_traj = get_free_time_traj(T=T)
+
+    # testing adding slack matrix component
+    name = :s
+    data = rand(2, T)
+    type = :slack
+
+    # case: fixed time
+    add_component!(fixed_time_traj, name, data; type=type)
+    @test fixed_time_traj.s ≈ data
+    @test name ∈ fixed_time_traj.names
+
+    # case: free time
+    add_component!(free_time_traj, name, data; type=type)
+    @test free_time_traj.s ≈ data
+    @test name ∈ free_time_traj.names
+
+    # testing removing slack matrix component
+    name = :s
+
+    # case: fixed time
+    fixed_time_traj = remove_component(fixed_time_traj, name)
+    @test name ∉ fixed_time_traj.names
+    @test name ∉ fixed_time_traj.state_names
+
+    # case: free time
+    free_time_traj = remove_component(free_time_traj, name)
+    @test name ∉ free_time_traj.names
+    @test name ∉ free_time_traj.state_names
 end
 
 @testitem "updating trajectory data" begin
@@ -1102,6 +1152,7 @@ end
     traj = merge(trajs, merge_names=(; a=1))
     @test traj isa NamedTrajectory
     @test issetequal(traj.state_names, xs)
+    @test issetequal(traj.control_names, (:a,))
 end
 
 @testitem "merge free time trajectories" begin    
