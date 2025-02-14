@@ -477,14 +477,6 @@ function add_suffix(
 end
 
 function add_suffix(
-    d::Dict{Symbol, Any}, 
-    suffix::String; 
-    exclude::AbstractVector{<:Symbol}=Symbol[]
-)
-    return typeof(d)(k ∈ exclude ? k : add_suffix(k, suffix) => v for (k, v) ∈ d)
-end
-
-function add_suffix(
     nt::NamedTuple, 
     suffix::String; 
     exclude::AbstractVector{<:Symbol}=Symbol[]
@@ -583,14 +575,6 @@ function get_suffix(
     names = Tuple(remove ? remove_suffix(k, suffix) : k for (k, v) ∈ pairs(nt) if endswith(k, suffix))
     values = [v for (k, v) ∈ pairs(nt) if endswith(k, suffix)]
     return NamedTuple{names}(values)
-end
-
-function get_suffix(
-    d::Dict{<:Symbol, <:Any}, 
-    suffix::String; 
-    remove::Bool=false
-)
-    return Dict(remove ? remove_suffix(k, suffix) : k => v for (k, v) ∈ d if endswith(k, suffix))
 end
 
 function get_suffix(
@@ -1261,6 +1245,7 @@ end
 
 @testitem "Remove suffix" begin 
     @test remove_suffix(:a_new, "_new") == :a
+    @error remove_suffix(:a, "_new")
 
     test = (:a_new, :b_new)
     @test remove_suffix(test, "_new") == (:a, :b)
