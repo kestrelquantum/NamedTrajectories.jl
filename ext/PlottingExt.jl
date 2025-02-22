@@ -1,15 +1,13 @@
-module PlottingExtensions
+module PlottingExt
 
-using ..NamedTrajectories
-import Plotting: nameplot, nameplot!, trajectoryplot, trajectoryplot!
+using NamedTrajectories
+import NamedTrajectories: nameplot, nameplot!, trajectoryplot
 
 # Ideally, we'd only need MakieCore for recipes
-using MakieCore
-import MakieCore: convert_arguments 
-
-# But, we need Series, Axis, Figure etc. (SpecAPI might fix this?)
+# But, we need Series, Axis, Figure etc. 
+# And it's recommended to use Makie for ext
 using Makie
-import Makie: Series
+import Makie: convert_arguments
 
 # -------------------------------------------------------------- #
 # Plot trajectories by name using Series or Plot
@@ -31,14 +29,14 @@ function convert_arguments(
         transform_data = traj[name]
     end
 
-    return convert_arguments(P, NT.get_times(traj), transform_data)
+    return convert_arguments(P, get_times(traj), transform_data)
 end
 
 # Allow transform to be passed to the plotting function
-MakieCore.used_attributes(::Type{<:Series}, ::NT.NamedTrajectory, ::Symbol) = (:transform,)
+Makie.used_attributes(::Type{<:Series}, ::NamedTrajectory, ::Symbol) = (:transform,)
 
 # Allow plot to be called on NamedTrajectory
-MakieCore.plottype(::NT.NamedTrajectory, ::Symbol) = Series
+Makie.plottype(::NamedTrajectory, ::Symbol) = Series
 
 # -------------------------------------------------------------- #
 # Plot trajectories by name with recipe
@@ -129,7 +127,7 @@ end
 # -------------------------------------------------------------- #
 
 function trajectoryplot(
-    traj::NT.NamedTrajectory,
+    traj::NamedTrajectory,
     names::Union{AbstractVector{Symbol}, Tuple{Vararg{Symbol}}}=traj.names;
 
     # ---------------------------------------------------------------------------
@@ -244,7 +242,7 @@ end
 
 # TODO: We should have a default theme
 function trajectoryplot(
-    theme::MakieCore.Theme,
+    theme::Makie.Theme,
     args...;
     kwargs...
 )

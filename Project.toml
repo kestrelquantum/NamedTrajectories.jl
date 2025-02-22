@@ -15,16 +15,16 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 Unidecode = "967fb449-e509-55aa-8007-234b4096b967"
 
 [weakdeps]
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [extensions]
-PlottingExtensions = "CairoMakie"
+PlottingExt = ["Makie"]
 
 [compat]
-CairoMakie = "0.13"
 JLD2 = "0.5"
 LaTeXStrings = "1.4"
 Latexify = "0.16"
+Makie = "0.22"
 OrderedCollections = "1.7"
 Reexport = "1.2"
 TestItemRunner = "1.0"
