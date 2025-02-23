@@ -145,7 +145,7 @@ function trajectoryplot(
     # ---------------------------------------------------------------------------
 
     # transformations
-    transformations::NamedTuple{N, <:Tuple{Vararg{F}}} where {N, F <: Function} = (;),
+    transformations::NamedTuple{<:Any, <:Tuple{Vararg{<:Function}}} = (;),
 
     # labels for transformed components
     transformation_labels::AbstractVector{<:Union{Nothing, String}} = fill(nothing, length(transformations)),
