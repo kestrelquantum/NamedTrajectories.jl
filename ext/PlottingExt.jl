@@ -9,6 +9,9 @@ import NamedTrajectories: namedplot, namedplot!, trajectoryplot
 using Makie
 import Makie: convert_arguments
 
+using TestItems
+
+
 # -------------------------------------------------------------- #
 # Plot trajectories by name using Series or Plot
 # -------------------------------------------------------------- #
@@ -251,5 +254,108 @@ function trajectoryplot(
     end
 end
 
+# =========================================================================== #
+
+# TODO:
+# - Check legends and merges
+# - Check plot attributes
+# - Check transformations and number of plots
+# - Check returned plot types
+# - Check that theme is applied
+
+@testitem "convert_arguments plot with legend and transform" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10)
+
+    # TODO: what is return value? check if default plot is a series
+    plot(traj, :x)
+    @test true
+
+    f = Figure()
+    plot(f[1,1], traj, :x)
+    
+    ax = Axis(f[2, 1])
+    labels = ["T(x) $i" for i in 1:size(traj.x, 1)]
+    p = plot!(
+        ax, traj, :x, transform=x -> x .^ 2, 
+        labels=labels, color=:seaborn_colorblind, marker=:circle,
+    )
+    Legend(f[2,2], ax)
+    @test f isa Figure
+end
+
+@testitem "basic namedplot recipe" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10)
+
+    f = Figure()
+    ax = Axis(f[1,1])
+    p = namedplot!(ax, traj, :x)
+    Legend(f[1,2], ax)
+    @test f isa Figure
+end
+
+@testitem "namedplot transform and merge" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10)
+
+    f = Figure()
+    ax = Axis(f[1,1])
+    p = namedplot!(ax, traj, :x, "y", x -> x .^ 2, linewidth=3, marker=:circle, merge=true)
+    Legend(f[1,2], ax, merge=true)
+
+    ax = Axis(f[2,1])
+    p = namedplot!(ax, traj, :x, nothing, x -> x .^ 2, linewidth=3, marker=:circle)
+    Legend(f[2,2], ax)
+
+    @test f isa Figure
+end
+
+@testitem "create figure with trajectoryplot" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10)
+
+    f = trajectoryplot(
+        traj, 
+        merge_labels=[true, false],
+        transformations=(x = x -> [x[1] * 30],), 
+        merge_transformation_labels=true,
+    )
+    @test f isa Figure
+
+    # multiple transformations
+    # test multiple transformations TODO: should we have a better way to handle empty Symbols[]?
+    f = trajectoryplot(
+        traj, Symbol[],
+        transformations=(x = x -> [x[1] * 30], u = u -> u .^2),
+        transformation_labels=["Label(x)", "Label(u)"], 
+        merge_transformation_labels=[false, true]
+    )
+    @test f isa Figure
+end
+
+@testitem "create figure with series kwargs" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10)
+
+    # test passing in series kwargs
+    f = trajectoryplot(
+        traj, 
+        [:x, :u],
+        merge_labels=[true, false],
+        transformations=(x = x -> [x[1] ^6],), 
+        merge_transformation_labels=true,
+        linewidth=5,
+        color=:glasbey_bw_minc_20_n256,
+    )
+    @test f isa Figure
+end
+
+@testitem "create figure with a theme" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10)
+    f = trajectoryplot(theme_dark(), traj)
+    @test f isa Figure
+end
 
 end
