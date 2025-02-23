@@ -1,7 +1,7 @@
 module PlottingExt
 
 using NamedTrajectories
-import NamedTrajectories: nameplot, nameplot!, trajectoryplot
+import NamedTrajectories: namedplot, namedplot!, trajectoryplot
 
 # Ideally, we'd only need MakieCore for recipes
 # But, we need Series, Axis, Figure etc. 
