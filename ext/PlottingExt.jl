@@ -216,7 +216,7 @@ function trajectoryplot(
     # ---------------
     offset = length(names)
 
-    for (i, (input, transform)) in enumerate(transformations)
+    for (i, (input, transform)) in enumerate(pairs(transformations))
         ax = Axis(
             fig[offset + i, 1],
             title = i == 1 ? "Transformations" : "",
