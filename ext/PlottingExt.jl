@@ -129,6 +129,12 @@ end
 # Plot trajectories as figure
 # -------------------------------------------------------------- #
 
+# TODO:
+# - A better way to handle empty Symbols[]?
+# - Should we have a default theme?
+# - Vector of labels for transformations (instead of appending index)?
+# - Allow for transformations to use the entire knot point?
+
 function trajectoryplot(
     traj::NamedTrajectory,
     names::Union{AbstractVector{Symbol}, Tuple{Vararg{Symbol}}}=traj.names;
@@ -148,11 +154,11 @@ function trajectoryplot(
     # ---------------------------------------------------------------------------
 
     # transformations
-    transformations::NamedTuple{<:Any, <:Tuple{Vararg{<:Function}}} = (;),
+    transformations::AbstractVector{<:Tuple{Symbol, <:Function}} = Tuple{Symbol, Function}[],
 
     # labels for transformed components
     transformation_labels::AbstractVector{<:Union{Nothing, String}} = fill(nothing, length(transformations)),
-    
+
     # whether or not to include unique labels for transformed components
     merge_transformation_labels::Union{Bool, AbstractVector{Bool}} = false,
     
@@ -219,7 +225,7 @@ function trajectoryplot(
     # ---------------
     offset = length(names)
 
-    for (i, (input, transform)) in enumerate(pairs(transformations))
+    for (i, (input, transform)) in enumerate(transformations)
         ax = Axis(
             fig[offset + i, 1],
             title = i == 1 ? "Transformations" : "",
@@ -243,7 +249,6 @@ function trajectoryplot(
     fig
 end
 
-# TODO: We should have a default theme
 function trajectoryplot(
     theme::Makie.Theme,
     args...;
@@ -324,7 +329,7 @@ end
     @test f isa Figure
 
     # multiple transformations
-    # test multiple transformations TODO: should we have a better way to handle empty Symbols[]?
+    # test multiple transformations
     f = trajectoryplot(
         traj, Symbol[],
         transformations=(x = x -> [x[1] * 30], u = u -> u .^2),
