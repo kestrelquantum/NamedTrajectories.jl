@@ -87,16 +87,10 @@ function Makie.plot!(
             labels = ["$(name) $(i)" for i in eachindex(traj.components[name])]
         end
 
-        colors = try 
-            Makie.categorical_colors(P[:color][], length(labels))
-        catch
-            Makie.resample_cmap(P[:color][], length(labels))
-        end
-
         plot!(
             P, traj, name;
             labels = labels,
-            color = colors,
+            color = Makie.resample_cmap(P[:color][], length(labels)),
             linestyle = P[:linestyle],
             linewidth = P[:linewidth],
             marker = P[:marker],
@@ -129,17 +123,11 @@ function Makie.plot!(
             labels = ["$(output) $(i)" for i in eachindex(traj.components[input])]
         end
 
-        colors = try 
-            Makie.categorical_colors(P[:color][], length(labels))
-        catch
-            Makie.resample_cmap(P[:color][], length(labels))
-        end
-
         plot!(
             P, traj, input;
             transform = transform,
             labels = labels,
-            color = colors,
+            color = Makie.resample_cmap(P[:color][], length(labels)),
             linestyle = P[:linestyle],
             linewidth = P[:linewidth],
             marker = P[:marker],
