@@ -58,13 +58,14 @@ Makie.plottype(::NamedTrajectory, ::Symbol) = Series
 # Plot trajectories by name with recipe
 # -------------------------------------------------------------- #
 
+# docstring in plotting.jl
 @recipe(NamedPlot, traj, input_name, output_name, transform) do scene
     # Add any desired series attributes here
     Attributes(
-        color = :seaborn_colorblind,
+        color = :glasbey_bw_n256,
         linestyle = theme(scene, :linestyle),
         linewidth = theme(scene, :linewidth),
-        marker = :circle,
+        marker = theme(scene, :marker),
         markersize = theme(scene, :markersize),
         # Merge: If true, all components are plotted with the same label
         merge = false,
@@ -87,14 +88,20 @@ function Makie.plot!(
             labels = ["$(name) $(i)" for i in eachindex(traj.components[name])]
         end
 
+        # Resample a minimum of 2 colors
+        colors =  Makie.resample_cmap(P[:color][], max(2, length(labels)))
+
+        # Empty marker means no size
+        markersize = isnothing(P[:marker][]) ? nothing :  P[:markersize]
+
         plot!(
             P, traj, name;
             labels = labels,
-            color = Makie.resample_cmap(P[:color][], length(labels)),
+            color = colors,
             linestyle = P[:linestyle],
             linewidth = P[:linewidth],
             marker = P[:marker],
-            markersize = P[:markersize],
+            markersize = markersize,
         )
         
     end
@@ -123,15 +130,21 @@ function Makie.plot!(
             labels = ["$(output) $(i)" for i in eachindex(traj.components[input])]
         end
 
+        # Resample a minimum of 2 colors
+        colors =  Makie.resample_cmap(P[:color][], max(2, length(labels)))
+
+        # Empty marker means no size
+        markersize = isnothing(P[:marker][]) ? nothing :  P[:markersize]
+
         plot!(
             P, traj, input;
             transform = transform,
             labels = labels,
-            color = Makie.resample_cmap(P[:color][], length(labels)),
+            color = colors,
             linestyle = P[:linestyle],
             linewidth = P[:linewidth],
             marker = P[:marker],
-            markersize = P[:markersize],
+            markersize = markersize,
         )
         
     end
@@ -148,6 +161,16 @@ end
 # - Vector of labels for transformations (instead of appending index)?
 # - Allow for transformations to use the entire knot point? No symbol.
 
+"""
+    Makie.plot(
+        traj::NamedTrajectory,
+        names::Union{AbstractVector{Symbol}, Tuple{Vararg{Symbol}}}=traj.names;
+        kwargs...
+    )
+
+Plot a `NamedTrajectory` using Makie.
+
+"""
 function Makie.plot(
     traj::NamedTrajectory,
     names::Union{AbstractVector{Symbol}, Tuple{Vararg{Symbol}}}=traj.names;
@@ -167,7 +190,7 @@ function Makie.plot(
     # ---------------------------------------------------------------------------
 
     # transformations
-    transformations::AbstractVector{<:Tuple{Symbol, <:Function}} = Tuple{Symbol, Function}[],
+    transformations::AbstractVector{<:Pair{Symbol, <:Function}} = Pair{Symbol, Function}[],
 
     # labels for transformed components
     transformation_labels::AbstractVector{<:Union{Nothing, String}} = fill(nothing, length(transformations)),
@@ -179,7 +202,7 @@ function Makie.plot(
     # figure and axis keyword arguments
     # ---------------------------------------------------------------------------
     
-    fig_size::Tuple{Int, Int} = (1200, 800),
+    fig_size::Tuple{Int, Int} = (800, 600),
     titlesize::Int=16,
     xlabelsize::Int=16,
 
@@ -313,6 +336,23 @@ end
     @test f isa Figure
 end
 
+@testitem "namedplot with one dimension" begin
+    using CairoMakie
+    p = namedplot(rand(NamedTrajectory, 10, state_dim=1), :x)
+end
+
+
+@testitem "namedplot with many colors" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10, state_dim=100)
+
+    f = Figure()
+    ax = Axis(f[1,1])
+    p = namedplot!(ax, traj, :x)
+    Legend(f[1,2], ax)
+    @test f isa Figure
+end
+
 @testitem "namedplot transform and merge" begin
     using CairoMakie
     traj = rand(NamedTrajectory, 10)
@@ -333,22 +373,22 @@ end
     using CairoMakie
     traj = rand(NamedTrajectory, 10)
 
-    # test repeat label
+    # multiple transformations
+    transformations = [(:x => x -> [x[1] * 30]), (:u => u -> u .^2)]
+
     f = plot(
-        traj, 
-        merge_labels=[true, false],
-        transformations=[(:x, x -> [x[1] ^6]), (:x, x -> [x[2] ^6])],
-        merge_transformation_labels=true,
+        traj, Symbol[],
+        transformations=transformations,
+        transformation_labels=["Label(x)", "Label(u)"], 
+        merge_transformation_labels=[false, true]
     )
     @test f isa Figure
 
-    # multiple transformations
-    # test multiple transformations
+    # test repeat label
+    push!(transformations, (:x => x -> [x[2] ^6]))
     f = plot(
-        traj, Symbol[],
-        transformations=[(:x, x -> [x[1] * 30]), (:u, u -> u .^2)],
-        transformation_labels=["Label(x)", "Label(u)"], 
-        merge_transformation_labels=[false, true]
+        traj, 
+        transformations=transformations,
     )
     @test f isa Figure
 end

@@ -2,13 +2,30 @@
 # CollapsedDocStrings = true
 # ```
 
-# # Plotting
-
-# Visualizing trajectories is crucial for understanding the solutions of trajectory optmization problems and `NamedTrajectories` exports a `plot` function that contains a lot of functionality that is continually being added to. [Makie.jl](https://docs.makie.org/stable/) is used as the plotting framework, and at the moment the default backend is `CairoMakie`, as it creates high quality vector graphics. The function is called as follows:
-
 #=
+# Plotting
+
+Visualizing trajectories is crucial for understanding the solutions of trajectory 
+optmization problems and `NamedTrajectories` exports a `plot` function that contains a 
+lot of functionality that is continually being added to. 
+
+[Makie.jl](https://docs.makie.org/stable/) is used as the plotting framework. An extension
+package is used to load plotting functionality whenever a version of Makie is installed
+in the current environment. For example, use `CairoMakie` to creates high quality vector
+graphics. 
+
+
+The main recipe for named trajectory plotting is as follows:
+
 ```@docs; canonical = false
-NamedTrajectories.plot
+namedplot
+```
+
+The `plot` function is a wrapper around `namedplot` that allows for easy plotting of
+`NamedTrajectory` objects. The `plot` function has the following signature:
+
+```julia
+plot(traj::NamedTrajectory, args...; kwargs...)
 ```
 =#
 
@@ -69,7 +86,7 @@ plot(traj, [:x, :u])
 
 # For example, if we wanted to plot absolute values of the states we could do the following:
 
-transformations = [(:x, x -> abs.(x))]
+transformations = [(:x => x -> abs.(x))]
 
 plot(traj, [:x]; transformations=transformations)
 
@@ -77,8 +94,8 @@ plot(traj, [:x]; transformations=transformations)
 
 ## define the transformations
 transformations = [
-    (:x, x -> [x[1] + x[2], x[3] - x[2]]),
-    (:x, x -> [x[1] - x[2], x[3] + x[2]])
+    (:x => x -> [x[1] + x[2], x[3] - x[2]]),
+    (:x => x -> [x[1] - x[2], x[3] + x[2]])
 ]
 
 ## plot the trajectory, with only the transformation and the `u` control
