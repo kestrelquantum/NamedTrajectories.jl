@@ -1,7 +1,7 @@
 module PlottingExt
 
 using NamedTrajectories
-import NamedTrajectories: namedplot, namedplot!, trajectoryplot
+import NamedTrajectories: namedplot, namedplot!
 
 # Ideally, we'd only need MakieCore for recipes
 # But, we need Series, Axis, Figure etc. 
@@ -61,13 +61,13 @@ Makie.plottype(::NamedTrajectory, ::Symbol) = Series
 @recipe(NamedPlot, traj, input_name, output_name, transform) do scene
     # Add any desired series attributes here
     Attributes(
-        color=:seaborn_colorblind,
-        linestyle=theme(scene, :linestyle),
-        linewidth=theme(scene, :linewidth),
-        marker=:circle,
-        markersize=theme(scene, :markersize),
+        color = :seaborn_colorblind,
+        linestyle = theme(scene, :linestyle),
+        linewidth = theme(scene, :linewidth),
+        marker = :circle,
+        markersize = theme(scene, :markersize),
         # Merge: If true, all components are plotted with the same label
-        merge=false,
+        merge = false,
     )
 end
 
@@ -87,10 +87,16 @@ function Makie.plot!(
             labels = ["$(name) $(i)" for i in eachindex(traj.components[name])]
         end
 
+        colors = try 
+            Makie.categorical_colors(P[:color][], length(labels))
+        catch
+            Makie.resample_cmap(P[:color][], length(labels))
+        end
+
         plot!(
             P, traj, name;
-            labels=labels,
-            color = P[:color],
+            labels = labels,
+            color = colors,
             linestyle = P[:linestyle],
             linewidth = P[:linewidth],
             marker = P[:marker],
@@ -123,11 +129,17 @@ function Makie.plot!(
             labels = ["$(output) $(i)" for i in eachindex(traj.components[input])]
         end
 
+        colors = try 
+            Makie.categorical_colors(P[:color][], length(labels))
+        catch
+            Makie.resample_cmap(P[:color][], length(labels))
+        end
+
         plot!(
             P, traj, input;
-            transform=transform,
-            labels=labels,
-            color = P[:color],
+            transform = transform,
+            labels = labels,
+            color = colors,
             linestyle = P[:linestyle],
             linewidth = P[:linewidth],
             marker = P[:marker],
@@ -146,9 +158,9 @@ end
 # - A better way to handle empty Symbols[]?
 # - Should we have a default theme?
 # - Vector of labels for transformations (instead of appending index)?
-# - Allow for transformations to use the entire knot point?
+# - Allow for transformations to use the entire knot point? No symbol.
 
-function trajectoryplot(
+function Makie.plot(
     traj::NamedTrajectory,
     names::Union{AbstractVector{Symbol}, Tuple{Vararg{Symbol}}}=traj.names;
 
@@ -262,13 +274,13 @@ function trajectoryplot(
     fig
 end
 
-function trajectoryplot(
+function Makie.plot(
     theme::Makie.Theme,
     args...;
     kwargs...
 )
     with_theme(theme) do
-        trajectoryplot(args...; kwargs...)
+        plot(args...; kwargs...)
     end
 end
 
@@ -329,12 +341,12 @@ end
     @test f isa Figure
 end
 
-@testitem "create figure with trajectoryplot" begin
+@testitem "create figure with plot" begin
     using CairoMakie
     traj = rand(NamedTrajectory, 10)
 
     # test repeat label
-    f = trajectoryplot(
+    f = plot(
         traj, 
         merge_labels=[true, false],
         transformations=[(:x, x -> [x[1] ^6]), (:x, x -> [x[2] ^6])],
@@ -344,7 +356,7 @@ end
 
     # multiple transformations
     # test multiple transformations
-    f = trajectoryplot(
+    f = plot(
         traj, Symbol[],
         transformations=[(:x, x -> [x[1] * 30]), (:u, u -> u .^2)],
         transformation_labels=["Label(x)", "Label(u)"], 
@@ -358,7 +370,7 @@ end
     traj = rand(NamedTrajectory, 10)
 
     # test passing in series kwargs
-    f = trajectoryplot(
+    f = plot(
         traj, 
         [:x, :u],
         linewidth=5,
@@ -370,7 +382,7 @@ end
 @testitem "create figure with a theme" begin
     using CairoMakie
     traj = rand(NamedTrajectory, 10)
-    f = trajectoryplot(theme_dark(), traj)
+    f = plot(theme_dark(), traj)
     @test f isa Figure
 end
 

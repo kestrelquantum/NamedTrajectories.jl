@@ -7,9 +7,9 @@
 # Visualizing trajectories is crucial for understanding the solutions of trajectory optmization problems and `NamedTrajectories` exports a `plot` function that contains a lot of functionality that is continually being added to. [Makie.jl](https://docs.makie.org/stable/) is used as the plotting framework, and at the moment the default backend is `CairoMakie`, as it creates high quality vector graphics. The function is called as follows:
 
 #=
-# ```@docs; canonical = false
-# NamedTrajectories.trajectoryplot
-# ```
+```@docs; canonical = false
+NamedTrajectories.plot
+```
 =#
 
 # ## Basic example
@@ -51,7 +51,7 @@ traj = NamedTrajectory(
 )
 
 ## plot the trajectory
-trajectoryplot(traj)
+plot(traj)
 
 # ## Selectively plotting components
 
@@ -61,7 +61,7 @@ the `components` keyword argument. For example, if we only wanted to plot the st
 first control we could do the following:
 =#
 
-trajectoryplot(traj, [:x, :u])
+plot(traj, [:x, :u])
 
 # ## Playing with transformations
 
@@ -71,7 +71,7 @@ trajectoryplot(traj, [:x, :u])
 
 transformations = [(:x, x -> abs.(x))]
 
-trajectoryplot(traj, [:x]; transformations=transformations)
+plot(traj, [:x]; transformations=transformations)
 
 # We can also pass multiple transformations to the same component, with selective labels and titles:
 
@@ -82,4 +82,4 @@ transformations = [
 ]
 
 ## plot the trajectory, with only the transformation and the `u` control
-trajectoryplot(traj, [:u]; transformations=transformations,)
+plot(traj, [:u]; transformations=transformations,)

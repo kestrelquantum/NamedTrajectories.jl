@@ -51,7 +51,7 @@ traj.names
 # Use a Makie backend to automatically load the NamedTrajectories plotting extension
 using CairoMakie
 
-trajectoryplot(traj)
+plot(traj)
 
 
 # ## Creating a variable-timestep `NamedTrajectory`
