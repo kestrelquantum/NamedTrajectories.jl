@@ -320,10 +320,11 @@ end
     using CairoMakie
     traj = rand(NamedTrajectory, 10)
 
+    # test repeat label
     f = trajectoryplot(
         traj, 
         merge_labels=[true, false],
-        transformations=(x = x -> [x[1] * 30],), 
+        transformations=[(:x, x -> [x[1] ^6]), (:x, x -> [x[2] ^6])],
         merge_transformation_labels=true,
     )
     @test f isa Figure
@@ -332,7 +333,7 @@ end
     # test multiple transformations
     f = trajectoryplot(
         traj, Symbol[],
-        transformations=(x = x -> [x[1] * 30], u = u -> u .^2),
+        transformations=[(:x, x -> [x[1] * 30]), (:u, u -> u .^2)],
         transformation_labels=["Label(x)", "Label(u)"], 
         merge_transformation_labels=[false, true]
     )
@@ -347,9 +348,6 @@ end
     f = trajectoryplot(
         traj, 
         [:x, :u],
-        merge_labels=[true, false],
-        transformations=(x = x -> [x[1] ^6],), 
-        merge_transformation_labels=true,
         linewidth=5,
         color=:glasbey_bw_minc_20_n256,
     )
