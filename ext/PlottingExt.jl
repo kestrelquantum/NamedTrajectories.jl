@@ -7,16 +7,29 @@ import NamedTrajectories: namedplot, namedplot!, trajectoryplot
 # But, we need Series, Axis, Figure etc. 
 # And it's recommended to use Makie for ext
 using Makie
-import Makie: convert_arguments
 
 using TestItems
 
+# -------------------------------------------------------------- #
+# Plot trajectories with PointBased conversion
+# -------------------------------------------------------------- #
+
+function Makie.convert_arguments(
+    P::Makie.PointBased,
+    traj::NamedTrajectory,
+    comp::Int
+)
+    positions = map(enumerate(get_times(traj))) do (i, t)
+        (t, traj.data[comp, i])
+    end
+    return Makie.convert_arguments(P, positions)
+end
 
 # -------------------------------------------------------------- #
 # Plot trajectories by name using Series or Plot
 # -------------------------------------------------------------- #
 
-function convert_arguments(
+function Makie.convert_arguments(
     P::Type{<:Series}, 
     traj::NamedTrajectory,
     name::Symbol;
@@ -32,7 +45,7 @@ function convert_arguments(
         transform_data = traj[name]
     end
 
-    return convert_arguments(P, get_times(traj), transform_data)
+    return Makie.convert_arguments(P, get_times(traj), transform_data)
 end
 
 # Allow transform to be passed to the plotting function
