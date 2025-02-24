@@ -33,11 +33,15 @@ function Makie.convert_arguments(
     P::Type{<:Series}, 
     traj::NamedTrajectory,
     name::Symbol;
-    transform::Union{Function, Nothing}=nothing
+    transform::Union{Nothing, Function, AbstractVector{<:Function}}=nothing
 )
     if !isnothing(transform)
         transform_data = try
-            stack(transform.(eachcol(traj[name])))
+            if transform isa Vector
+                stack([T(col) for (T, col) in zip(transform, eachcol(traj[name]))])
+            else
+                stack(transform.(eachcol(traj[name])))
+            end
         catch
             throw(ArgumentError("Transformation of $(name) failed."))
         end
@@ -114,7 +118,7 @@ function Makie.plot!(
         <:NamedTrajectory, 
         Symbol, 
         Union{Nothing, Symbol, String}, 
-        Function
+        Union{<:Function, AbstractVector{<:Function}}
     }};
     kwargs...
 )
@@ -158,7 +162,6 @@ end
 # TODO:
 # - A better way to handle empty Symbols[]?
 # - Should we have a default theme?
-# - Vector of labels for transformations (instead of appending index)?
 # - Allow for transformations to use the entire knot point? No symbol.
 
 """
@@ -190,7 +193,7 @@ function Makie.plot(
     # ---------------------------------------------------------------------------
 
     # transformations
-    transformations::AbstractVector{<:Pair{Symbol, <:Function}} = Pair{Symbol, Function}[],
+    transformations::AbstractVector{<:Pair{Symbol, <:Union{<:Function, <:AbstractVector{<:Function}}}} = Pair{Symbol, Function}[],
 
     # labels for transformed components
     transformation_labels::AbstractVector{<:Union{Nothing, String}} = fill(nothing, length(transformations)),
@@ -303,6 +306,7 @@ end
 # - Check transformations and number of plots
 # - Check returned plot types
 # - Check that theme is applied
+# - If random traj changes default dimensions, these tests will break (colors)
 
 @testitem "convert_arguments plot with legend and transform" begin
     using CairoMakie
@@ -338,9 +342,17 @@ end
 
 @testitem "namedplot with one dimension" begin
     using CairoMakie
-    p = namedplot(rand(NamedTrajectory, 10, state_dim=1), :x)
+    f, ax, plt = namedplot(rand(NamedTrajectory, 10, state_dim=1), :x)
+    @test f isa Figure
 end
 
+@testitem "transform with vector of functions" begin
+    using CairoMakie
+    f, ax, plt = plot(
+        rand(NamedTrajectory, 10), :x, transform=[x -> x .^ t for t in 1:10]
+    )
+    @test f isa Figure
+end
 
 @testitem "namedplot with many colors" begin
     using CairoMakie
