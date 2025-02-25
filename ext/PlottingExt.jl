@@ -62,6 +62,9 @@ Makie.plottype(::NamedTrajectory, ::Symbol) = Series
 # Plot trajectories by name with recipe
 # -------------------------------------------------------------- #
 
+# TODO
+# - Should namedplot have a label attribute?
+
 # docstring in plotting.jl
 @recipe(NamedPlot, traj, input_name, output_name, transform) do scene
     # Add any desired series attributes here
@@ -162,7 +165,7 @@ end
 # TODO:
 # - A better way to handle empty Symbols[]?
 # - Should we have a default theme?
-# - Allow for transformations to use the entire knot point? No symbol.
+# - Allow for transformations to use the entire knot point? No symbol?
 
 """
     Makie.plot(
@@ -300,21 +303,23 @@ end
 
 # =========================================================================== #
 
-# TODO:
-# - Check legends and merges
-# - Check plot attributes
-# - Check transformations and number of plots
-# - Check returned plot types
-# - Check that theme is applied
-# - If random traj changes default dimensions, these tests will break (colors)
+@testitem "check point based" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10, state_dim=3)
+
+    f, ax, plt = stairs(traj, 1)
+    @test f isa Figure
+end
+
+@testitem "check default plot is series" begin
+    using CairoMakie
+    f, ax, plt = plot(rand(NamedTrajectory, 10, state_dim=3), :x)
+    @test plt isa Series
+end
 
 @testitem "convert_arguments plot with legend and transform" begin
     using CairoMakie
-    traj = rand(NamedTrajectory, 10)
-
-    # TODO: what is return value? check if default plot is a series
-    plot(traj, :x)
-    @test true
+    traj = rand(NamedTrajectory, 10, state_dim=3)
 
     f = Figure()
     plot(f[1,1], traj, :x)
@@ -326,17 +331,32 @@ end
         labels=labels, color=:seaborn_colorblind, marker=:circle,
     )
     Legend(f[2,2], ax)
+    @test p.attributes.labels[] == labels
     @test f isa Figure
 end
 
 @testitem "basic namedplot recipe" begin
     using CairoMakie
-    traj = rand(NamedTrajectory, 10)
+    traj = rand(NamedTrajectory, 10, state_dim=3)
 
     f = Figure()
     ax = Axis(f[1,1])
     p = namedplot!(ax, traj, :x)
     Legend(f[1,2], ax)
+
+    @test p isa Plot{namedplot}
+    
+    # Test Series attributes
+    for attr in [:color, :linestyle, :linewidth, :marker, :markersize]
+        @test attr in keys(p.attributes)
+    end
+
+    # Test special attributes
+    @test p.attributes.merge[] == false
+
+    # Test labels (set on the Series plot)
+    @test p.plots[1].attributes.labels[] == ["x $i" for i in 1:size(traj.x, 1)]
+
     @test f isa Figure
 end
 
@@ -349,8 +369,11 @@ end
 @testitem "transform with vector of functions" begin
     using CairoMakie
     f, ax, plt = plot(
-        rand(NamedTrajectory, 10), :x, transform=[x -> x .^ t for t in 1:10]
+        rand(NamedTrajectory, 10), :x, transform=[x -> [t - 1] for t in 1:10]
     )
+    # check internals 
+    expected = [Point(Float64(t), Float64(t)) for t in 0:9]
+    @test plt.converted[1][][1] ≈ expected
     @test f isa Figure
 end
 
@@ -362,39 +385,47 @@ end
     ax = Axis(f[1,1])
     p = namedplot!(ax, traj, :x)
     Legend(f[1,2], ax)
+    @test length(p.plots[1].attributes.labels[]) == 100
     @test f isa Figure
 end
 
 @testitem "namedplot transform and merge" begin
     using CairoMakie
-    traj = rand(NamedTrajectory, 10)
+    traj = rand(NamedTrajectory, 10, state_dim=3)
 
     f = Figure()
     ax = Axis(f[1,1])
     p = namedplot!(ax, traj, :x, "y", x -> x .^ 2, linewidth=3, marker=:circle, merge=true)
     Legend(f[1,2], ax, merge=true)
+    @test p.plots[1].attributes.labels[] == ["y" for i in 1:size(traj.x, 1)]
 
     ax = Axis(f[2,1])
-    p = namedplot!(ax, traj, :x, nothing, x -> x .^ 2, linewidth=3, marker=:circle)
+    p = namedplot!(ax, traj, :x, "y", x -> x .^ 2, linewidth=3, marker=:circle)
     Legend(f[2,2], ax)
-
-    @test f isa Figure
+    @test p.plots[1].attributes.labels[] == ["y $i" for i in 1:size(traj.x, 1)]
 end
 
-@testitem "create figure with plot" begin
+@testitem "traj plot with transformations" begin
     using CairoMakie
-    traj = rand(NamedTrajectory, 10)
+    traj = rand(NamedTrajectory, 10, state_dim=3)
 
     # multiple transformations
     transformations = [(:x => x -> [x[1] * 30]), (:u => u -> u .^2)]
 
     f = plot(
-        traj, Symbol[],
+        traj, [:u],
         transformations=transformations,
         transformation_labels=["Label(x)", "Label(u)"], 
         merge_transformation_labels=[false, true]
     )
-    @test f isa Figure
+    # check for all the right parts
+    ax1, leg1, ax2, leg2, ax3, leg3 = f.content
+    for ax in [ax1, ax2, ax3]
+        @test ax isa Axis
+    end
+    for leg in [leg1, leg2, leg3]
+        @test leg isa Legend
+    end
 
     # test repeat label
     push!(transformations, (:x => x -> [x[2] ^6]))
@@ -402,27 +433,39 @@ end
         traj, 
         transformations=transformations,
     )
+    ax1, leg1, ax2, leg2, ax3, leg3, ax4, leg4 = f.content
+    for ax in [ax1, ax2, ax3, ax4]
+        @test ax isa Axis
+    end
+    for leg in [leg1, leg2, leg3, leg4]
+        @test leg isa Legend
+    end
     @test f isa Figure
 end
 
-@testitem "create figure with series kwargs" begin
+@testitem "traj plot with series kwargs" begin
     using CairoMakie
-    traj = rand(NamedTrajectory, 10)
-
     # test passing in series kwargs
     f = plot(
-        traj, 
+        rand(NamedTrajectory, 10, state_dim=3), 
         [:x, :u],
         linewidth=5,
         color=:glasbey_bw_minc_20_n256,
+        marker = :x,
+        markersize = 10
     )
+    # check attributes of first axis
+    attributes = f.content[1].scene.plots[1].attributes
+    @test attributes.linewidth[] == 5
+    @test attributes.color[] == :glasbey_bw_minc_20_n256
+    @test attributes.marker[] == :x
+    @test attributes.markersize[] == 10
     @test f isa Figure
 end
 
 @testitem "create figure with a theme" begin
     using CairoMakie
-    traj = rand(NamedTrajectory, 10)
-    f = plot(theme_dark(), traj)
+    f = plot(theme_dark(), rand(NamedTrajectory, 10, state_dim=3))
     @test f isa Figure
 end
 
