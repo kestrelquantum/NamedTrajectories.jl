@@ -55,6 +55,7 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
+            using CairoMakie
             using NamedTrajectories
             DocMeta.setdocmeta!(NamedTrajectories, :DocTestSetup, :(using NamedTrajectories); recursive=true)
             doctest(NamedTrajectories)'
