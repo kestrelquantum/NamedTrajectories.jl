@@ -11,7 +11,6 @@ pkg> add NamedTrajectories
 =#
 
 # Then just use the package as usual with
-
 using NamedTrajectories
 
 # For the following examples let's work with a simple trajectory
@@ -49,6 +48,8 @@ traj = NamedTrajectory(data; timestep=timestep, controls=control)
 traj.names
 
 # Let's plot this trajectory
+# Use a Makie backend to automatically load the NamedTrajectories plotting extension
+using CairoMakie
 
 plot(traj)
 
