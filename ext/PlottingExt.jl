@@ -202,7 +202,7 @@ function Makie.plot(
     transformation_labels::AbstractVector{<:Union{Nothing, String}} = fill(nothing, length(transformations)),
 
     # titles for transformations
-    transformation_titles::AbstractVector{String} = fill("", length(transformations)),
+    transformation_titles::AbstractVector{<:AbstractString} = fill("", length(transformations)),
 
     # whether or not to include unique labels for transformed components
     merge_transformation_labels::Union{Bool, AbstractVector{Bool}} = false,
