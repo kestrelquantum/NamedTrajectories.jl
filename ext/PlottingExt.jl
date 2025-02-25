@@ -201,6 +201,9 @@ function Makie.plot(
     # labels for transformed components
     transformation_labels::AbstractVector{<:Union{Nothing, String}} = fill(nothing, length(transformations)),
 
+    # titles for transformations
+    transformation_titles::AbstractVector{String} = fill("", length(transformations)),
+
     # whether or not to include unique labels for transformed components
     merge_transformation_labels::Union{Bool, AbstractVector{Bool}} = false,
     
@@ -209,7 +212,8 @@ function Makie.plot(
     # ---------------------------------------------------------------------------
     
     fig_size::Tuple{Int, Int} = (800, 600),
-    titlesize::Int=16,
+    titlesize::Int=18,
+    subtitlesize::Int=16,
     xlabelsize::Int=16,
 
     # ---------------------------------------------------------------------------
@@ -270,14 +274,18 @@ function Makie.plot(
     for (i, (input, transform)) in enumerate(transformations)
         ax = Axis(
             fig[offset + i, 1],
-            title = i == 1 ? "Transformations" : "",
+            title = i == 1 || !isempty(transformation_titles[i]) ? "Transformations" : "",
+            titlecolor = i == 1 ? theme(fig.scene, :textcolor) : (:black, 0.0),
             titlealign = :left,
             titlesize = titlesize,
+            subtitle = transformation_titles[i],
+            subtitlesize = subtitlesize,
             xticklabelsvisible = i == length(transformations),
             xtickalign = 1,
             xlabel = i == length(transformations) ? "time" : "",
             xlabelsize = xlabelsize,
         )
+        
         output = transformation_labels[i]
         merge = merge_transformation_labels[i]
         namedplot!(ax, traj, input, output, transform, merge=merge; kwargs...)
@@ -441,6 +449,25 @@ end
         @test leg isa Legend
     end
     @test f isa Figure
+end
+
+@testitem "transformation titles" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10, state_dim=3)
+
+    # multiple transformations
+    transformations = [(:x => x -> [x[1] * 30]), (:u => u -> u .^2)]
+    transformation_titles= ["Title 1", "Title 2"]
+
+    f = plot(
+        traj, Symbol[],
+        transformations=transformations,
+        transformation_titles=transformation_titles
+    )
+    ax1, leg1, ax2, leg2 = f.content
+    @test ax1.subtitle[] == transformation_titles[1]
+    @test ax2.subtitle[] == transformation_titles[2]
+
 end
 
 @testitem "traj plot with series kwargs" begin
