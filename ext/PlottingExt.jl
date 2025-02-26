@@ -62,9 +62,6 @@ Makie.plottype(::NamedTrajectory, ::Symbol) = Series
 # Plot trajectories by name with recipe
 # -------------------------------------------------------------- #
 
-# TODO
-# - Should namedplot have a label attribute?
-
 # docstring in plotting.jl
 @recipe(NamedPlot, traj, input_name, output_name, transform) do scene
     # Add any desired series attributes here
@@ -75,24 +72,63 @@ Makie.plottype(::NamedTrajectory, ::Symbol) = Series
         marker = theme(scene, :marker),
         markersize = theme(scene, :markersize),
         # Merge: If true, all components are plotted with the same label
-        merge = false,
+        merge = false
     )
 end
 
 # Add the ability to recall plot labels for a legend (extract series subplots)
 Makie.get_plots(P::NamedPlot) = Makie.get_plots(P.plots[1])
 
-# Plot existing component
+# Plot existing component (LaTeX label from name)
 function Makie.plot!(
     P::NamedPlot{<:Tuple{<:NamedTrajectory, Symbol}};
     kwargs...
 )
     lift(P[:traj], P[:input_name]) do traj, name
 
+        label = L"%$name"
+
         if P[:merge][]
-            labels = fill("$name", length(traj.components[name]))
+            labels = fill(label, length(traj.components[name]))
         else
-            labels = ["$(name) $(i)" for i in eachindex(traj.components[name])]
+            labels = [convert(typeof(label), "$(label) $(i)") for i in eachindex(traj.components[name])]
+        end
+
+        # Resample a minimum of 2 colors
+        colors =  Makie.resample_cmap(P[:color][], max(2, length(labels)))
+
+        # Empty marker means no size
+        markersize = isnothing(P[:marker][]) ? nothing :  P[:markersize]
+
+        plot!(
+            P, traj, name;
+            labels = labels,
+            color = colors,
+            linestyle = P[:linestyle],
+            linewidth = P[:linewidth],
+            marker = P[:marker],
+            markersize = markersize,
+        )
+        
+    end
+    return P
+end
+
+# Plot existing component
+function Makie.plot!(
+    P::NamedPlot{<:Tuple{
+        <:NamedTrajectory, 
+        Symbol,
+        <:AbstractString
+    }};
+    kwargs...
+)
+    lift(P[:traj], P[:input_name], P[:output_name]) do traj, name, label
+
+        if P[:merge][]
+            labels = fill(label, length(traj.components[name]))
+        else
+            labels = [convert(typeof(label), "$(label) $(i)") for i in eachindex(traj.components[name])]
         end
 
         # Resample a minimum of 2 colors
@@ -120,21 +156,21 @@ function Makie.plot!(
     P::NamedPlot{<:Tuple{
         <:NamedTrajectory, 
         Symbol, 
-        Union{Nothing, Symbol, String}, 
-        Union{<:Function, AbstractVector{<:Function}}
+        <:AbstractString, 
+        <:Union{<:Function, AbstractVector{<:Function}}
     }};
     kwargs...
 )
     lift(P[:traj], P[:input_name], P[:output_name], P[:transform]) do traj, input, output, transform
 
-        if isnothing(output)
-            output = "T($input)"
+        if isempty(output)
+            output = L"T(%$input)"
         end
 
         if P[:merge][]
-            labels = fill("$output", length(traj.components[input]))
+            labels = fill(output, length(traj.components[input]))
         else
-            labels = ["$(output) $(i)" for i in eachindex(traj.components[input])]
+            labels = [convert(typeof(output), "$(output) $(i)") for i in eachindex(traj.components[input])]
         end
 
         # Resample a minimum of 2 colors
@@ -199,7 +235,7 @@ function Makie.plot(
     transformations::AbstractVector{<:Pair{Symbol, <:Union{<:Function, <:AbstractVector{<:Function}}}} = Pair{Symbol, Function}[],
 
     # labels for transformed components
-    transformation_labels::AbstractVector{<:Union{Nothing, String}} = fill(nothing, length(transformations)),
+    transformation_labels::AbstractVector{<:AbstractString} = fill("", length(transformations)),
 
     # titles for transformations
     transformation_titles::AbstractVector{<:AbstractString} = fill("", length(transformations)),
@@ -362,10 +398,19 @@ end
     # Test special attributes
     @test p.attributes.merge[] == false
 
-    # Test labels (set on the Series plot)
-    @test p.plots[1].attributes.labels[] == ["x $i" for i in 1:size(traj.x, 1)]
+    # Test labels (set on the Series plot) (LaTeX string defaults)
+    @test p.plots[1].attributes.labels[] == [L"$x$ %$i" for i in 1:size(traj.x, 1)]
 
     @test f isa Figure
+end
+
+@testitem "named plot with LaTeXString label" begin
+    using CairoMakie
+    traj = rand(NamedTrajectory, 10, state_dim=3)
+    label = L"\alpha"
+    _, _, p = namedplot(traj, :x, label, merge=true)
+    # Check that LaTeX string is preserved
+    @test p.plots[1].attributes.labels[][1] == label
 end
 
 @testitem "namedplot with one dimension" begin
