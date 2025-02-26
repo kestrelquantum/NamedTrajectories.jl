@@ -1,18 +1,15 @@
 name = "NamedTrajectories"
 uuid = "538bc3a1-5ab9-4fc3-b776-35ca1e893e08"
 authors = ["Aaron Trowbridge <aaron.j.trowbridge@gmail.com> and contributors"]
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
-LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
-Unidecode = "967fb449-e509-55aa-8007-234b4096b967"
 
 [weakdeps]
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
@@ -22,19 +19,16 @@ PlottingExt = ["Makie"]
 
 [compat]
 JLD2 = "0.5"
-LaTeXStrings = "1.4"
-Latexify = "0.16"
 Makie = "0.22"
 OrderedCollections = "1.7"
 Reexport = "1.2"
 TestItemRunner = "1.0"
 TestItems = "1.0"
-Unidecode = "1.1"
 julia = "1.10, 1.11"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["CairoMakie", "Test"]
