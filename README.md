@@ -1,6 +1,6 @@
 <!--```@raw html-->
 <div align="center">
-  <a href="https://github.com/kestrelquantum/Piccolo.jl">
+  <a href="https://github.com/harmoniqs/Piccolo.jl">
     <img src="assets/logo.svg" alt="logo" width="25%"/>
   </a> 
 </div>
@@ -11,21 +11,21 @@
       <td align="center">
         <b>Documentation</b>
         <br>
-        <a href="https://kestrelquantum.github.io/NamedTrajectories.jl/stable/">
+        <a href="https://harmoniqs.github.io/NamedTrajectories.jl/stable/">
           <img src="https://img.shields.io/badge/docs-stable-blue.svg" alt="Stable"/>
         </a>
-        <a href="https://kestrelquantum.github.io/NamedTrajectories.jl/dev/">
+        <a href="https://harmoniqs.github.io/NamedTrajectories.jl/dev/">
           <img src="https://img.shields.io/badge/docs-dev-blue.svg" alt="Dev"/>
         </a>
       </td>
       <td align="center">
         <b>Build Status</b>
         <br>
-        <a href="https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml?query=branch%3Amain">
-          <img src="https://github.com/kestrelquantum/NamedTrajectories.jl/actions/workflows/CI.yml/badge.svg?branch=main" alt="Build Status"/>
+        <a href="https://github.com/harmoniqs/NamedTrajectories.jl/actions/workflows/CI.yml?query=branch%3Amain">
+          <img src="https://github.com/harmoniqs/NamedTrajectories.jl/actions/workflows/CI.yml/badge.svg?branch=main" alt="Build Status"/>
         </a>
-        <a href="https://codecov.io/gh/kestrelquantum/NamedTrajectories.jl">
-          <img src="https://codecov.io/gh/kestrelquantum/NamedTrajectories.jl/branch/main/graph/badge.svg" alt="Coverage"/>
+        <a href="https://codecov.io/gh/harmoniqs/NamedTrajectories.jl">
+          <img src="https://codecov.io/gh/harmoniqs/NamedTrajectories.jl/branch/main/graph/badge.svg" alt="Coverage"/>
         </a>
       </td>
       <td align="center">
@@ -54,7 +54,7 @@
 
 # NamedTrajectories.jl
 
-**NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with the [Piccolo.jl](https://github.com/kestrelquantum/Piccolo.jl) ecosystem.
+**NamedTrajectories.jl** is a package for working with trajectories of named variables. It is designed to be used with the [Piccolo.jl](https://github.com/harmoniqs/Piccolo.jl) ecosystem.
 
 ## Installation
 
@@ -112,7 +112,7 @@ traj.names # returns names as tuple (:x, :u)
 
 ## Motivation
 
-[NamedTrajectories.jl](https://github.com/kestrelquantum/NamedTrajectories.jl) is designed to aid in the messy indexing involved in solving trajectory optimization problems of the form
+[NamedTrajectories.jl](https://github.com/harmoniqs/NamedTrajectories.jl) is designed to aid in the messy indexing involved in solving trajectory optimization problems of the form
 ```math
 \begin{aligned}
     \arg \min_{\mathbf{Z}}\quad & J(\mathbf{Z}) \\
