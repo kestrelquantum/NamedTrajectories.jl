@@ -78,6 +78,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/harmoniqs/NamedTrajectories.jl.git",
+    repo=Documenter.Remotes.GitHub("harmoniqs", "NamedTrajectories.jl"),
     devbranch="main",
 )

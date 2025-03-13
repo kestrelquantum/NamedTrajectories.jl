@@ -14,3 +14,18 @@ Modules = [
     NamedTrajectories.RandomTrajectories
 ]
 ```
+
+## Struct Methods
+```@autodocs
+Modules = [
+    StructNamedTrajectory
+]
+```
+
+## Trajectory Utilities
+```@autodocs
+Modules = [
+    Utils
+]
+``` 
+
