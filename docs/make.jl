@@ -80,4 +80,5 @@ makedocs(;
 deploydocs(;
     repo="github.com/harmoniqs/NamedTrajectories.jl.git",
     devbranch="main",
+    versions=[ "dev" => "dev", "stable" => "v^", "v#.#" ]
 )
